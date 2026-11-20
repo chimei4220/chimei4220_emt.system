@@ -1,0 +1,1936 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>教材組管理系統</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<style>
+:root{--ac:#BF6766;--ac-dk:#9E4F4E;--ac-lt:#FBF1F1;--ac-bd:#EFD3D2;--bg:#f7f4f4;--top:#BF6766;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+/* Topbar */
+.topbar{height:54px;background:var(--top);display:flex;align-items:center;padding:0 20px;justify-content:space-between;flex-shrink:0;box-shadow:0 2px 6px rgba(191,103,102,.3);}
+.tb-brand{display:flex;align-items:center;gap:10px;color:#fff;font-weight:700;font-size:1rem;}
+.tb-brand .logo{width:32px;height:32px;background:rgba(255,255,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.tb-brand .logo i{font-size:1.1rem;color:#fff;}
+.tb-right{display:flex;align-items:center;gap:12px;}
+.tb-time{color:rgba(255,255,255,.75);font-size:0.82rem;}
+.tb-admin{background:rgba(255,255,255,.15);color:#fff;font-size:0.8rem;padding:5px 14px;border-radius:20px;display:flex;align-items:center;gap:6px;}
+/* Layout */
+.app-body{display:flex;flex:1;overflow:hidden;}
+/* Top navigation (in blue topbar) — 選單靠左，緊接系統名稱 */
+.topbar{display:grid!important;grid-template-columns:auto 1fr auto;gap:22px;position:relative;z-index:1030;}
+.topnav{justify-self:start;}
+.tb-brand{min-width:0;}
+.tb-brand span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tb-right{justify-self:end;}
+.tb-ver{color:rgba(255,255,255,.6);font-size:.75rem;padding-left:12px;border-left:1px solid rgba(255,255,255,.25);}
+.topnav{display:flex;align-items:center;gap:4px;}
+.topnav>.sb-link,.nav-dd{display:flex;align-items:center;gap:7px;height:34px;padding:0 13px;border-radius:8px;color:rgba(255,255,255,.78);font-size:.86rem;font-weight:500;cursor:pointer;text-decoration:none;white-space:nowrap;background:none;border:none;transition:background .15s,color .15s;}
+.topnav>.sb-link:hover,.nav-dd:hover,.nav-dd.show{color:#fff;background:rgba(255,255,255,.12);}
+.topnav>.sb-link.active,.nav-group.active>.nav-dd{color:#fff;background:rgba(255,255,255,.22);font-weight:600;}
+.topnav>.sb-link:focus-visible,.nav-dd:focus-visible,.mnav-btn:focus-visible{outline:2px solid #fff;outline-offset:1px;}
+.topnav i{font-size:.95rem;}
+.nav-sep{width:1px;height:20px;background:rgba(255,255,255,.3);margin:0 6px;}
+.nav-dd .dd-caret{font-size:.62rem;margin-left:1px;transition:transform .15s;}
+.nav-dd.show .dd-caret{transform:rotate(180deg);}
+.nav-group{display:flex;}
+.nav-group .dropdown-menu{border:1px solid #e5e9f2;border-radius:10px;box-shadow:0 10px 28px rgba(15,23,42,.18);padding:6px;min-width:180px;margin-top:6px!important;}
+.nav-group .dropdown-menu .sb-link{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:7px;color:#475569;font-size:.85rem;cursor:pointer;text-decoration:none;}
+.nav-group .dropdown-menu .sb-link:hover{background:var(--ac-lt);color:var(--ac);}
+.nav-group .dropdown-menu .sb-link.active{background:var(--ac-lt);color:var(--ac);font-weight:600;}
+.nav-group .dropdown-menu .sb-link i{width:16px;text-align:center;}
+.dropdown-divider{margin:4px 6px;border-color:#f1f5f9;}
+.sb-badge{font-size:.65rem;background:#fff;color:var(--ac);font-weight:700;padding:1px 7px;border-radius:10px;line-height:1.6;}
+/* 手機版：漢堡按鈕 + 側拉選單 */
+.mnav-btn{display:none;width:38px;height:38px;border:none;border-radius:9px;background:rgba(255,255,255,.15);color:#fff;font-size:1.35rem;align-items:center;justify-content:center;}
+.mnav-cur{display:none;color:#fff;font-weight:600;font-size:.95rem;white-space:nowrap;}
+#mobileNav{width:280px;}
+#mobileNav .offcanvas-header{background:var(--top);color:#fff;padding:14px 18px;}
+#mobileNav .offcanvas-body{padding:8px 12px 16px;}
+.mnav-sec{font-size:.72rem;color:#94a3b8;font-weight:700;padding:14px 10px 6px;}
+.mnav-sec:first-child{padding-top:6px;}
+#mobileNav .sb-link{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 12px;border-radius:9px;color:#475569;font-size:.92rem;text-decoration:none;cursor:pointer;}
+#mobileNav .sb-link i{font-size:1.05rem;width:20px;text-align:center;}
+#mobileNav .sb-link:active{background:var(--ac-lt);}
+#mobileNav .sb-link.active{background:var(--ac-lt);color:var(--ac);font-weight:600;}
+#mobileNav .sb-badge{margin-left:auto;background:var(--ac);color:#fff;}
+.mnav-foot{border-top:1px solid #f1f5f9;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;font-size:.82rem;color:#64748b;}
+@media (max-width:1199.98px){.tb-time,.tb-ver{display:none;}.tb-brand span{display:none;}}
+@media (max-width:991.98px){
+  .topbar{grid-template-columns:auto 1fr auto;padding:0 12px;}
+  .topnav,.tb-right{display:none!important;}
+  .mnav-btn{display:flex;}
+  .mnav-cur{display:block;justify-self:start;}
+  .main{padding:16px!important;}
+}
+.sec-divider{border:0;border-top:1px solid #d5dce8;opacity:1;margin:20px 0;}
+.tc-orig{font-size:.72rem;color:#b45309;margin-top:3px;min-height:0;}
+.tc-basic.tc-changed{border-color:#f59e0b;background:#fffbeb;}
+/* Main */
+.main{flex:1;overflow-y:auto;padding:22px 26px;}
+.panel{display:none;}.panel.active{display:block;}
+/* Page title */
+.pg-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.pg-title{display:flex;align-items:center;gap:8px;}
+.pg-title h5{font-size:1.05rem;font-weight:700;margin:0;color:#1e293b;}
+.pg-title .pg-icon{width:34px;height:34px;background:var(--ac-lt);border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.pg-title .pg-icon i{color:var(--ac);font-size:1rem;}
+.pg-sub{font-size:.78rem;color:#94a3b8;margin-top:1px;}
+/* Card */
+.card{border:none;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.07);background:#fff;}
+.card-hd{padding:13px 18px;border-bottom:1px solid #f1f5f9;font-weight:600;font-size:.88rem;color:#334155;display:flex;align-items:center;justify-content:space-between;}
+.tbl-center th,.tbl-center td{text-align:center;vertical-align:middle;}
+.card-bd{padding:18px;}
+/* Status badges */
+.st{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.73rem;font-weight:600;white-space:nowrap;}
+.st-借用中{background:#dbeafe;color:#1d4ed8;}
+.st-借用教室{background:#fef9c3;color:#854d0e;}
+.st-尚未結案{background:#fff7ed;color:#c2410c;box-shadow:inset 0 0 0 1px #fb923c;}
+.venue-room{color:#854d0e;font-weight:700;}
+.acc-click{cursor:pointer;}
+.acc-click:hover{filter:brightness(.95);box-shadow:0 0 0 1px rgba(0,0,0,.08);}
+.acc{display:inline-flex;align-items:center;font-size:.73rem;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap;}
+.acc-ok{background:#dcfce7;color:#15803d;}
+.acc-no{background:#ffedd5;color:#c2410c;}
+.acc-peer{background:#dbeafe;color:#1d4ed8;}
+.acc-wait{background:#fee2e2;color:#b91c1c;}
+.acc-lent{background:#ede9fe;color:#6d28d9;}
+.acc-loading{background:#f1f5f9;color:#94a3b8;font-weight:500;}
+#accMenu{position:fixed;z-index:2000;display:none;background:#fff;border-radius:10px;box-shadow:0 8px 24px rgba(15,23,42,.18);padding:6px;min-width:170px;}
+.acc-menu-h{font-size:.72rem;color:#94a3b8;padding:2px 8px 6px;}
+.acc-menu-i{display:flex;align-items:center;width:100%;border:0;background:none;padding:6px 8px;border-radius:6px;font-size:.8rem;text-align:left;}
+.acc-menu-i:hover{background:#f1f5f9;}
+.acc-menu-i.on{background:#f8fafc;}
+.need-pick{border-color:#ef4444!important;box-shadow:0 0 0 .18rem rgba(239,68,68,.22)!important;}
+.need-pick-hint{font-size:.72rem;color:#dc2626;font-weight:600;white-space:nowrap;}
+.st-即將到期{background:#ffedd5;color:#9a3412;}
+.st-今日到期{background:#fee2e2;color:#991b1b;}
+.st-已過期{background:#fce7f3;color:#9d174d;}
+.st-已結案{background:#e5e7eb;color:#4b5563;}
+.st-取消{background:#e5e7eb;color:#4b5563;}
+.st-未借出{background:#ede9fe;color:#5b21b6;}
+/* Status filter tabs - match badge colors */
+.stf-btn{background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:20px;padding:4px 14px;font-size:.78rem;color:#94a3b8;cursor:pointer;font-weight:500;transition:all .15s;}
+.stf-btn:hover{border-color:#cbd5e1;color:#475569;}
+.stf-btn .cnt{font-size:.7rem;margin-left:4px;}
+.stf-btn[data-status=""].active,.stf-btn[data-status="all"].active{background:#1d4ed8;color:#fff;border-color:#1d4ed8;}
+.stf-btn[data-status="借用中"].active{background:#dbeafe;color:#1d4ed8;border-color:#93c5fd;}
+.stf-btn[data-status="借用教室"].active{background:#fef9c3;color:#854d0e;border-color:#fde047;}
+.stf-btn[data-status="尚未結案"].active{background:#fff7ed;color:#c2410c;border-color:#fb923c;}
+.stf-btn[data-status="今日到期"].active{background:#fee2e2;color:#991b1b;border-color:#fca5a5;}
+.stf-btn[data-status="即將到期"].active{background:#ffedd5;color:#9a3412;border-color:#fdba74;}
+.stf-btn[data-status="已過期"].active{background:#fce7f3;color:#9d174d;border-color:#f9a8d4;}
+.stf-btn[data-status="已結案"].active{background:#e5e7eb;color:#4b5563;border-color:#9ca3af;}
+.stf-btn[data-status="取消"].active{background:#e5e7eb;color:#4b5563;border-color:#9ca3af;}
+.stf-btn[data-status="未借出"].active{background:#ede9fe;color:#5b21b6;border-color:#a78bfa;}
+/* Tab buttons */
+.tab-bar{display:flex;gap:0;border-bottom:1px solid #f1f5f9;padding:0 8px;}
+.tab-btn{background:none;border:none;border-bottom:2px solid transparent;padding:10px 18px;font-size:.85rem;color:#64748b;cursor:pointer;font-weight:500;transition:all .15s;}
+.tab-btn.active{color:var(--ac);border-bottom-color:var(--ac);}
+/* Table */
+.table{font-size:.81rem;margin:0;}
+.table th{font-size:.8rem;font-weight:600;color:#64748b;background:#f8fafc;white-space:nowrap;border-bottom:1px solid #e2e8f0;padding:9px 12px;}
+.table td{vertical-align:middle;color:#334155;border-bottom:1px solid #f1f5f9;padding:8px 12px;font-size:.85rem;}
+.table tbody tr:hover td{background:#f8faff;}
+.id-pill{color:var(--ac);font-weight:600;font-size:.78rem;cursor:pointer;}
+/* Editable */
+.ec{cursor:pointer;}
+.ec:hover{background:var(--ac-lt)!important;}
+.ec.editing{padding:0!important;}
+.ec input,.ec select{border:none;outline:2px solid var(--ac);width:100%;min-width:60px;font-size:.79rem;padding:5px 7px;background:var(--ac-lt);border-radius:4px;}
+.ew{background:#fffbeb!important;}
+.ejob{background:#fef2f2!important;box-shadow:inset 0 0 0 1.5px #f87171;}
+#previewBody tr.job-pending>td:first-child{box-shadow:inset 3px 0 0 #ef4444;}
+.em{background:var(--ac-lt)!important;}
+/* Filter card */
+.filter-card{background:#fff;border-radius:12px;padding:14px 18px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:14px;}
+/* Status filter tabs */
+.stf{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+/* 未選中：刷淡背景 + 深灰文字 */
+.stf-btn[data-status=""]{background:var(--ac-lt);color:#475569;border-color:var(--ac-bd);}
+.stf-btn[data-status="借用中"]{background:var(--ac-lt);color:#475569;border-color:var(--ac-bd);}
+.stf-btn[data-status="借用教室"]{background:#fefce8;color:#475569;border-color:#fde68a;}
+.stf-btn[data-status="尚未結案"]{background:#fffaf5;color:#475569;border-color:#fed7aa;}
+.stf-btn[data-status="今日到期"]{background:#fff5f5;color:#475569;border-color:#fecaca;}
+.stf-btn[data-status="即將到期"]{background:#fff7ed;color:#475569;border-color:#fed7aa;}
+.stf-btn[data-status="已過期"]{background:#fdf2f8;color:#475569;border-color:#fbcfe8;}
+.stf-btn[data-status="已結案"]{background:#f9fafb;color:#475569;border-color:#e5e7eb;}
+.stf-btn[data-status="取消"]{background:#f9fafb;color:#475569;border-color:#e5e7eb;}
+.stf-btn[data-status="未借出"]{background:#f5f3ff;color:#475569;border-color:#ddd6fe;}
+/* Dev panel */
+.dev-panel{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:320px;color:#94a3b8;gap:12px;}
+.dev-panel i{font-size:3rem;color:#cbd5e1;}
+.dev-panel h6{color:#64748b;font-weight:600;margin:0;}
+/* Loading */
+#lo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9998;align-items:center;justify-content:center;}
+#lo.show{display:flex;}
+.lo-box{background:#fff;border-radius:14px;padding:28px 36px;text-align:center;}
+.lo-box p{margin:10px 0 0;font-size:.88rem;color:#64748b;}
+.toast-container{z-index:9999;}
+/* Scrollbar */
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px;}
+/* Login */
+#loginPage{position:fixed;inset:0;background:linear-gradient(160deg,#FDF7F7 0%,#F2D3D2 45%,#D99594 75%,#BF6766 100%);display:flex;align-items:center;justify-content:center;z-index:99999;}
+#loginPage.hidden{display:none;}
+.login-box{background:#fff;border-radius:20px;padding:44px 48px;width:400px;box-shadow:0 20px 50px rgba(158,79,78,.22);}
+.login-logo{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:10px;}
+.login-logo .logo{width:52px;height:52px;background:var(--ac);border-radius:14px;display:flex;align-items:center;justify-content:center;}
+.login-logo .logo i{font-size:1.6rem;color:#fff;}
+.login-logo span{font-size:1.35rem;font-weight:700;color:#1e293b;text-align:center;}
+.login-title{font-size:.85rem;color:#94a3b8;text-align:center;margin-bottom:28px;margin-top:4px;}
+.login-divider{height:1px;background:#f1f5f9;margin-bottom:24px;}
+.login-box .form-label{font-size:.82rem;font-weight:600;color:#475569;}
+.login-box .form-control{border-radius:10px;font-size:.88rem;padding:10px 14px;border-color:#e2e8f0;background:#f8fafc;}
+.login-box .form-control:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(191,103,102,.12);background:#fff;}
+.login-btn{width:100%;padding:12px;border-radius:10px;font-size:.92rem;font-weight:600;background:var(--ac);border:none;color:#fff;margin-top:12px;cursor:pointer;transition:all .15s;letter-spacing:.02em;}
+.login-btn:hover{background:var(--ac-dk);transform:translateY(-1px);box-shadow:0 4px 12px rgba(191,103,102,.3);}
+.login-btn:disabled{opacity:.7;transform:none;box-shadow:none;}
+.login-error{color:#dc2626;font-size:.8rem;margin-top:10px;text-align:center;min-height:20px;}
+.login-footer{text-align:center;font-size:.75rem;color:#cbd5e1;margin-top:20px;}
+/* ===== 借還工作單 ===== */
+#dailyNoteModal .modal-body{background:#f4f6fb;}
+.dn-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;}
+.dn-bar .form-control{width:auto;}
+.dn-sec{background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06);margin-bottom:14px;overflow:hidden;}
+.dn-sec-h{display:flex;align-items:center;gap:8px;padding:10px 14px;font-weight:700;font-size:.92rem;border-bottom:1px solid #e2e8f0;}
+.dn-sec-h .dn-n{font-size:.75rem;font-weight:600;border-radius:10px;padding:1px 9px;}
+.dn-out .dn-sec-h{color:#1d4ed8;background:var(--ac-lt);} .dn-out .dn-n{background:#dbeafe;}
+.dn-in  .dn-sec-h{color:#047857;background:#ecfdf5;} .dn-in  .dn-n{background:#d1fae5;}
+.dn-due .dn-sec-h{color:#be185d;background:#fdf2f8;} .dn-due .dn-n{background:#fce7f3;}
+.dn-sum .dn-sec-h{color:#475569;background:#f8fafc;} .dn-sum .dn-n{background:#e2e8f0;}
+.dn-tbl{width:100%;font-size:.82rem;border-collapse:collapse;}
+.dn-tbl th{background:#f8fafc;color:#64748b;font-weight:600;padding:6px 8px;white-space:nowrap;border-bottom:1px solid #e2e8f0;text-align:left;}
+.dn-tbl td{padding:6px 8px;border-bottom:1px solid #f1f5f9;vertical-align:middle;}
+.dn-tbl td:nth-child(3){min-width:84px;} .dn-tbl td:nth-child(6){min-width:160px;} .dn-out td:nth-child(8),.dn-in td:nth-child(8){white-space:nowrap;}
+.dn-tbl tr.dn-off td{opacity:.4;text-decoration:line-through;}
+.dn-tbl tr.dn-off td.dn-act{opacity:1;text-decoration:none;}
+.dn-tbl textarea.dn-note{min-width:200px;padding:3px 6px;font-size:.8rem;line-height:1.4;resize:none;overflow:hidden;white-space:pre-wrap;}
+.dn-tbl td:last-child:has(textarea),.dn-tbl td:nth-last-child(2):has(textarea){width:24%;}
+.dn-tag{display:inline-block;font-size:.68rem;border-radius:6px;padding:0 6px;margin-left:4px;background:#fef9c3;color:#854d0e;white-space:nowrap;}
+.dn-tag.c{background:#e2e8f0;color:#475569;}
+.dn-tag.d{background:#fce7f3;color:#be185d;}
+.dn-tag.r{background:#ede9fe;color:#6d28d9;}
+.dn-room .dn-sec-h{color:#854d0e;background:#fefce8;} .dn-room .dn-n{background:#fef9c3;}
+.dn-empty{padding:14px;color:#94a3b8;font-size:.82rem;text-align:center;}
+.dn-hint{font-size:.75rem;color:#94a3b8;}
+/* 產生圖片用的版面（畫面外，固定寬度） */
+#dnCapture{position:fixed;left:-10000px;top:0;width:1200px;background:#fff;padding:28px 30px;font-family:'Microsoft JhengHei','PingFang TC','Noto Sans TC','Segoe UI',sans-serif;color:#0f172a;line-height:1.45;}
+#dnCapture h2{font-size:26px;font-weight:800;margin:0;line-height:1.3;}
+#dnCapture .cap-sub{font-size:14px;color:#64748b;margin:6px 0 18px;}
+#dnCapture .cap-sec{margin-bottom:20px;}
+#dnCapture .cap-h{font-size:17px;font-weight:800;padding:7px 12px;border-radius:6px;margin-bottom:8px;line-height:1.4;}
+#dnCapture table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:15px;}
+#dnCapture th,#dnCapture td{padding:8px 10px;border:1px solid #cbd5e1;text-align:left;vertical-align:middle;word-break:break-word;}
+#dnCapture th{background:#f1f5f9;color:#334155;font-weight:700;white-space:nowrap;}
+#dnCapture td.c,#dnCapture th.c{text-align:center;}
+#dnCapture td.nw{white-space:nowrap;}
+#dnCapture .box{display:block;margin:0 auto;width:18px;height:18px;border:2px solid #475569;border-radius:3px;}
+#dnCapture .tag{display:block;font-size:12.5px;font-weight:700;margin-top:2px;}
+#dnCapture .empty{color:#94a3b8;font-size:14px;padding:4px 12px;}
+#dnCapture .cap-foot{font-size:12px;color:#94a3b8;text-align:right;margin-top:6px;}
+/* ===== 財產照片 ===== */
+.as-thumb{width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0;cursor:zoom-in;background:#f8fafc;display:block;margin:0 auto;}
+.as-thumb-empty{margin:0 auto;width:44px;height:44px;border-radius:6px;border:1px dashed #cbd5e1;color:#cbd5e1;display:flex;align-items:center;justify-content:center;font-size:1rem;}
+.am-photo-frame{width:132px;height:132px;border-radius:10px;border:1.5px dashed #cbd5e1;background:#f8fafc;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;color:#94a3b8;font-size:.78rem;text-align:center;}
+.am-photo-frame img{width:100%;height:100%;object-fit:cover;cursor:zoom-in;}
+.am-photo-frame.has{border-style:solid;border-color:#e2e8f0;}
+.am-photo-name{font-size:.78rem;color:#475569;word-break:break-all;background:#f1f5f9;border-radius:6px;padding:4px 8px;}
+#photoViewerImg{max-width:100%;max-height:70vh;display:block;margin:0 auto;border-radius:8px;}
+.as-thumb-pair{display:flex;gap:6px;justify-content:center;}
+.as-thumb-box{position:relative;}
+.as-thumb-pair .as-thumb,.as-thumb-pair .as-thumb-empty{margin:0;}
+.as-tag-mark{position:absolute;right:-6px;bottom:-6px;font-size:.78rem;font-weight:700;line-height:1;background:#1e293b;color:#fff;border:1.5px solid #fff;border-radius:5px;padding:3px 4px;pointer-events:none;}
+.am-photo-slot{flex:1;min-width:240px;display:flex;gap:12px;align-items:flex-start;background:#f8fafc;border-radius:10px;padding:10px;}
+.am-photo-slot .am-photo-frame{width:112px;height:112px;}
+.pv-tabs .btn{font-size:.78rem;}
+/* ===== 教材組主題色 #BF6766 ===== */
+.btn-primary{--bs-btn-bg:var(--ac);--bs-btn-border-color:var(--ac);--bs-btn-hover-bg:var(--ac-dk);--bs-btn-hover-border-color:var(--ac-dk);--bs-btn-active-bg:var(--ac-dk);--bs-btn-active-border-color:var(--ac-dk);--bs-btn-disabled-bg:var(--ac);--bs-btn-disabled-border-color:var(--ac);}
+.btn-outline-primary{--bs-btn-color:var(--ac);--bs-btn-border-color:var(--ac);--bs-btn-hover-bg:var(--ac);--bs-btn-hover-border-color:var(--ac);--bs-btn-active-bg:var(--ac-dk);--bs-btn-active-border-color:var(--ac-dk);}
+.text-primary{color:var(--ac)!important;}
+.bg-primary{background-color:var(--ac)!important;}
+.spinner-border.text-primary{color:var(--ac)!important;}
+.form-control:focus,.form-select:focus{border-color:var(--ac-bd);box-shadow:0 0 0 .2rem rgba(191,103,102,.18);}
+.form-check-input:checked{background-color:var(--ac);border-color:var(--ac);}
+.form-check-input:focus{border-color:var(--ac-bd);box-shadow:0 0 0 .2rem rgba(191,103,102,.18);}
+a{color:var(--ac-dk);}
+</style>
+</head>
+<body>
+
+<!-- Login Page -->
+<div id="loginPage">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="logo"><i class="bi bi-camera-reels-fill"></i></div>
+      <span>教材組管理系統</span>
+    </div>
+    <div class="login-title">Chi Mei Hospital, Liouying</div>
+    <div class="login-divider"></div>
+    <div class="mb-3">
+      <label class="form-label"><i class="bi bi-person me-1"></i>帳號</label>
+      <input type="text" class="form-control" id="loginUser" placeholder="請輸入帳號" autocomplete="username">
+    </div>
+    <div class="mb-3">
+      <label class="form-label"><i class="bi bi-lock me-1"></i>密碼</label>
+      <input type="password" class="form-control" id="loginPass" placeholder="請輸入密碼" autocomplete="current-password">
+    </div>
+    <div class="login-error" id="loginError"></div>
+    <button class="login-btn" id="loginBtn">登　入</button>
+    <div class="login-footer">© 2026 柳營奇美 教材組　僅限授權人員使用</div>
+  </div>
+</div>
+
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="tb-brand">
+    <div class="logo"><i class="bi bi-camera-reels-fill"></i></div>
+    <span>教材組管理系統</span>
+  </div>
+  <span class="mnav-cur" id="mnavCur">財產總覽</span>
+  <button class="mnav-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileNav" aria-label="開啟選單"><i class="bi bi-list"></i></button>
+  <nav class="topnav" aria-label="主選單">
+    <a class="sb-link active" data-panel="assets" onclick="showPanel('assets',this)"><i class="bi bi-archive"></i>財產總覽</a>
+    <a class="sb-link" data-panel="changelog" onclick="showPanel('changelog',this)"><i class="bi bi-clock-history"></i>更新日誌</a>
+  </nav>
+  <div class="tb-right">
+    <span class="tb-time" id="clock"></span>
+    <span class="tb-ver" id="sidebarVersion">版本 v—</span>
+    <div class="tb-admin" style="cursor:pointer" onclick="doLogout()" title="點擊登出"><i class="bi bi-person-circle"></i><span id="currentUser">管理員</span><i class="bi bi-box-arrow-right ms-1" style="font-size:.75rem"></i></div>
+  </div>
+</div>
+
+<!-- Mobile Navigation Drawer -->
+<div class="offcanvas offcanvas-start" tabindex="-1" id="mobileNav" aria-label="主選單">
+  <div class="offcanvas-header">
+    <div class="tb-brand"><div class="logo"><i class="bi bi-camera-reels-fill"></i></div><span style="display:inline">教材組</span></div>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="關閉"></button>
+  </div>
+  <div class="offcanvas-body">
+    <div class="mnav-sec">主要功能</div>
+    <a class="sb-link active" data-panel="assets" onclick="showPanel('assets',this)"><i class="bi bi-archive"></i>財產總覽</a>
+    <div class="mnav-sec">系統</div>
+    <a class="sb-link" data-panel="changelog" onclick="showPanel('changelog',this)"><i class="bi bi-clock-history"></i>更新日誌</a>
+  </div>
+  <div class="mnav-foot">
+    <span><i class="bi bi-person-circle me-1"></i><span id="mnavUser">管理員</span></span>
+    <button class="btn btn-sm btn-outline-secondary" onclick="doLogout()"><i class="bi bi-box-arrow-right me-1"></i>登出</button>
+  </div>
+</div>
+
+<div class="app-body">
+<!-- Main -->
+<div class="main">
+
+<!-- 財產總覽 -->
+<div id="panel-assets" class="panel active">
+  <div class="pg-head">
+    <div class="pg-title">
+      <div class="pg-icon"><i class="bi bi-archive"></i></div>
+      <div><h5>財產總覽</h5><div class="pg-sub">教材組財產清冊管理</div></div>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary btn-sm" onclick="loadAssets()"><i class="bi bi-arrow-clockwise me-1"></i>重新整理</button>
+      <button class="btn btn-outline-success btn-sm" onclick="exportAssetsExcel()"><i class="bi bi-file-earmark-excel me-1"></i>匯出 Excel</button>
+      <button class="btn btn-primary btn-sm" onclick="openAssetModal()"><i class="bi bi-plus-lg me-1"></i>新增財產</button>
+    </div>
+  </div>
+
+  <!-- 統計卡片 -->
+  <div class="row g-3 mb-3" id="assetStats">
+    <div class="col-6 col-md">
+      <div class="card" style="border-radius:10px;">
+        <div class="card-bd" style="padding:12px 14px">
+          <div style="font-size:.72rem;color:#94a3b8;margin-bottom:4px">列管設備<span style="color:#cbd5e1">（有保管品編號）</span></div>
+          <div style="font-size:1.4rem;font-weight:700;color:#1e293b" id="stat-listed">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md">
+      <div class="card" style="border-radius:10px;">
+        <div class="card-bd" style="padding:12px 14px">
+          <div style="font-size:.72rem;color:#94a3b8;margin-bottom:4px">無列管設備<span style="color:#cbd5e1">（無保管品編號）</span></div>
+          <div style="font-size:1.4rem;font-weight:700;color:#64748b" id="stat-unlisted">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md">
+      <div class="card" style="border-radius:10px;">
+        <div class="card-bd" style="padding:12px 14px">
+          <div style="font-size:.72rem;color:#94a3b8;margin-bottom:4px">設備總數<span style="color:#cbd5e1">（有分類或名稱）</span></div>
+          <div style="font-size:1.4rem;font-weight:700;color:var(--ac)" id="stat-tools">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md d-none">
+      <div class="card" style="border-radius:10px;">
+        <div class="card-bd" style="padding:12px 14px">
+          <div style="font-size:.72rem;color:#94a3b8;margin-bottom:4px">教室設備<span style="color:#cbd5e1">（含軟硬體）</span></div>
+          <div style="font-size:1.4rem;font-weight:700;color:#0891b2" id="stat-room">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md">
+      <div class="card" style="border-radius:10px;">
+        <div class="card-bd" style="padding:12px 14px">
+          <div style="font-size:.72rem;color:#94a3b8;margin-bottom:4px">已報廢（項）</div>
+          <div style="font-size:1.4rem;font-weight:700;color:#dc2626" id="stat-retired">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 搜尋 + 模式切換 -->
+  <div class="card mb-3">
+    <div class="card-bd" style="padding:12px 16px">
+      <div class="d-flex gap-2 flex-wrap align-items-center">
+        <input type="text" class="form-control form-control-sm" id="assetKeyword" placeholder="搜尋設備名稱、保管品號..." style="max-width:260px" oninput="filterAssets()">
+        <select class="form-select form-select-sm" id="assetCatFilter" style="max-width:140px" onchange="filterAssets()">
+          <option value="">全部分類</option>
+        </select>
+        <div class="form-check form-switch mb-0 ms-1 d-none" style="font-size:.85rem">
+          <input class="form-check-input" type="checkbox" id="showClassroomToggle" checked onchange="filterAssets()" style="width:2.2em;height:1.1em">
+          <label class="form-check-label" for="showClassroomToggle" style="white-space:nowrap">顯示教室設備</label>
+        </div>
+        <div class="ms-auto">
+          <button class="btn btn-sm btn-outline-danger" id="showRetiredBtn" onclick="toggleRetiredView()" style="font-size:.82rem">
+            <i class="bi bi-archive me-1"></i>查看報廢項目
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 報廢清單 -->
+  <div id="retiredView" style="display:none">
+    <div class="card">
+      <div class="card-hd">
+        <span><i class="bi bi-archive me-2" style="color:#dc2626"></i>已報廢清單</span>
+        <span id="retiredCount" style="font-size:.78rem;color:#94a3b8"></span>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover table-bordered" id="retiredTable">
+          <thead>
+            <tr>
+              <th style="width:108px;text-align:center">保管品號</th>
+              <th style="width:220px">設備名稱</th>
+              <th style="width:100px;text-align:center">分類</th>
+              <th style="width:130px">材料編號</th>
+              <th style="width:44px;text-align:center">單位</th>
+              <th style="width:44px;text-align:center">數量</th>
+              <th style="width:84px;text-align:center">取得日期</th>
+              <th style="width:84px;text-align:center">報廢時間</th>
+              <th style="width:64px;text-align:center">財產標籤</th>
+              <th style="width:70px;text-align:center">註記</th>
+              <th style="width:40px;text-align:center">操作</th>
+            </tr>
+          </thead>
+          <tbody id="retiredBody">
+            <tr><td colspan="10" class="text-center text-muted py-4">載入中...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 列表檢視 -->
+  <div id="assetListView">
+    <div class="card">
+      <div class="card-hd">
+        <span><i class="bi bi-table me-2" style="color:var(--ac)"></i>財產清冊列表</span>
+        <span id="assetListCount" style="font-size:.78rem;color:#94a3b8"></span>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover table-bordered">
+          <thead>
+            <tr>
+              <th style="width:116px;text-align:center">照片</th>
+              <th style="width:108px;text-align:center">保管品號</th>
+              <th style="width:220px">設備名稱</th>
+              <th style="width:100px;text-align:center">分類</th>
+              <th style="width:130px">材料編號</th>
+              <th style="width:44px;text-align:center">單位</th>
+              <th style="width:44px;text-align:center">數量</th>
+              <th style="width:84px;text-align:center">取得日期</th>
+              <th style="width:64px;text-align:center">財產標籤</th>
+              <th style="width:70px;text-align:center">註記</th>
+              <th style="width:40px;text-align:center">操作</th>
+            </tr>
+          </thead>
+          <tbody id="assetListBody">
+            <tr><td colspan="11" class="text-center text-muted py-5" style="font-size:.85rem">載入中...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- 更新日誌 -->
+<div id="panel-changelog" class="panel">
+  <div class="pg-head">
+    <div class="pg-title">
+      <div class="pg-icon"><i class="bi bi-clock-history"></i></div>
+      <div><h5>更新日誌</h5><div class="pg-sub">系統每個版本的更新內容紀錄</div></div>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="openChangelogModal()"><i class="bi bi-plus-lg me-1"></i>新增紀錄</button>
+  </div>
+
+  <div id="changelogList"></div>
+</div>
+
+<!-- 更新日誌 新增 Modal -->
+<div class="modal fade" id="changelogModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title" id="clgModalTitle">新增更新日誌</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label" style="font-size:.85rem;font-weight:600">版次</label>
+          <input type="text" class="form-control" id="clgVersion" placeholder="例如：v1.3.0">
+        </div>
+        <div class="mb-3">
+          <label class="form-label" style="font-size:.85rem;font-weight:600">類型</label>
+          <select class="form-select" id="clgType">
+            <option value="新增項目">新增項目</option>
+            <option value="維護項目">維護項目</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" style="font-size:.85rem;font-weight:600">日期</label>
+          <input type="date" class="form-control" id="clgDate">
+        </div>
+        <div class="mb-1">
+          <label class="form-label" style="font-size:.85rem;font-weight:600">內容</label>
+          <textarea class="form-control" id="clgContent" rows="4" placeholder="這個版次做了哪些新增或維護..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">取消</button>
+        <button class="btn btn-primary btn-sm" id="clgSubmitBtn" onclick="submitChangelog()">新增</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+</div><!-- main -->
+</div><!-- app-body -->
+
+<!-- Asset Modal (新增/編輯財產) -->
+<div class="modal fade" id="photoViewerModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content" style="border-radius:14px;border:none;">
+      <div class="modal-header py-2 flex-wrap gap-2">
+        <div class="btn-group btn-group-sm pv-tabs" id="photoViewerTabs"></div>
+        <h6 class="modal-title" id="photoViewerTitle" style="font-size:.85rem;word-break:break-all;flex:1;min-width:200px"></h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center"><img id="photoViewerImg" alt=""></div>
+      <div class="modal-footer py-2">
+        <a class="btn btn-outline-secondary btn-sm" id="photoViewerLink" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right me-1"></i>在雲端硬碟開啟</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="assetModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content" style="border-radius:14px;border:none;">
+      <div class="modal-header" style="border-bottom:1px solid #f1f5f9;">
+        <h6 class="modal-title fw-bold" id="assetModalTitle"><i class="bi bi-archive me-2" style="color:var(--ac)"></i>新增財產</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="assetRowIndex">
+        <div class="row g-3" style="font-size:.85rem">
+          <!-- 財產照片（設備本體＋財產標籤） -->
+          <div class="col-12">
+            <label class="form-label fw-semibold mb-1">財產照片</label>
+            <div class="d-flex gap-2 flex-wrap">
+              <div class="am-photo-slot">
+                <div class="am-photo-frame" id="amPhotoFrame"><span><i class="bi bi-camera" style="font-size:1.4rem"></i><br>尚無照片</span></div>
+                <div style="flex:1;min-width:0">
+                  <div class="fw-semibold mb-1" style="font-size:.82rem">設備本體 <span class="text-primary fw-normal" id="amPhotoState" style="font-size:.72rem"></span></div>
+                  <div class="d-flex gap-1 flex-wrap mb-2">
+                    <label class="btn btn-outline-primary btn-sm mb-0"><i class="bi bi-image me-1"></i>選擇／拍攝
+                      <input type="file" accept="image/*" id="amPhotoInput" hidden onchange="amPhotoPick(this,'main')"></label>
+                    <button type="button" class="btn btn-outline-danger btn-sm" id="amPhotoRemoveBtn" onclick="amPhotoRemove('main')" style="display:none" title="移除"><i class="bi bi-x-lg"></i></button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="amPhotoUndoBtn" onclick="amPhotoUndo('main')" style="display:none" title="復原"><i class="bi bi-arrow-counterclockwise"></i></button>
+                  </div>
+                  <div class="am-photo-name" id="amPhotoName" style="font-size:.72rem">—</div>
+                </div>
+              </div>
+              <div class="am-photo-slot">
+                <div class="am-photo-frame" id="amTagFrame"><span><i class="bi bi-tag" style="font-size:1.4rem"></i><br>尚無照片</span></div>
+                <div style="flex:1;min-width:0">
+                  <div class="fw-semibold mb-1" style="font-size:.82rem">財產標籤 <span class="text-primary fw-normal" id="amTagState" style="font-size:.72rem"></span></div>
+                  <div class="d-flex gap-1 flex-wrap mb-2">
+                    <label class="btn btn-outline-primary btn-sm mb-0"><i class="bi bi-image me-1"></i>選擇／拍攝
+                      <input type="file" accept="image/*" id="amTagInput" hidden onchange="amPhotoPick(this,'tag')"></label>
+                    <button type="button" class="btn btn-outline-danger btn-sm" id="amTagRemoveBtn" onclick="amPhotoRemove('tag')" style="display:none" title="移除"><i class="bi bi-x-lg"></i></button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="amTagUndoBtn" onclick="amPhotoUndo('tag')" style="display:none" title="復原"><i class="bi bi-arrow-counterclockwise"></i></button>
+                  </div>
+                  <div class="am-photo-name" id="amTagName" style="font-size:.72rem">—</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- 類型選擇 -->
+          <div class="col-12">
+            <label class="form-label fw-semibold">財產類型<span style="color:red">*</span></label>
+            <div class="d-flex gap-3">
+              <div class="form-check"><input class="form-check-input" type="radio" name="amType" id="amTypeMain" value="main" checked onchange="onAssetTypeChange()"><label class="form-check-label" for="amTypeMain">設備主體</label></div>
+              <div class="form-check"><input class="form-check-input" type="radio" name="amType" id="amTypePart" value="part" onchange="onAssetTypeChange()"><label class="form-check-label" for="amTypePart">配件（隸屬某設備）</label></div>
+              <div class="form-check d-none"><input class="form-check-input" type="radio" name="amType" id="amTypeRoom" value="room" onchange="onAssetTypeChange()"><label class="form-check-label" for="amTypeRoom">教室設備</label></div>
+            </div>
+          </div>
+          <!-- 設備主體欄位 -->
+          <div id="amFieldMain">
+            <div class="row g-3">
+              <div class="col-12"><label class="form-label fw-semibold">設備名稱<span style="color:red">*</span></label><input type="text" class="form-control form-control-sm" id="am設備名稱" placeholder="例：數位單眼相機（Canon EOS R6）"></div>
+            </div>
+          </div>
+          <!-- 配件專屬：父項下拉 -->
+          <div id="amFieldPart" style="display:none">
+            <div class="row g-3">
+              <div class="col-12"><label class="form-label fw-semibold">隸屬設備（父項設備名稱）<span style="color:red">*</span></label>
+                <select class="form-select form-select-sm" id="am父項"><option value="">請選擇設備...</option></select>
+                <div class="form-text">配件的設備名稱可以留空，會用父項名稱分組顯示</div>
+              </div>
+              <div class="col-12"><label class="form-label fw-semibold">配件名稱（選填）</label><input type="text" class="form-control form-control-sm" id="am設備名稱2" placeholder="若配件有自己的名稱才填"></div>
+            </div>
+          </div>
+          <!-- 教室設備：父項固定為教室設備 -->
+          <div id="amFieldRoom" style="display:none">
+            <div class="row g-3">
+              <div class="col-12"><label class="form-label fw-semibold">設備名稱</label><input type="text" class="form-control form-control-sm" id="am設備名稱3" placeholder="例：視訊鏡頭、辦公椅..."></div>
+            </div>
+            <div class="alert alert-secondary py-2 mt-2 mb-0" style="font-size:.82rem"><i class="bi bi-info-circle me-1"></i>父項將自動設為「教室設備」，規格欄填寫品名描述</div>
+          </div>
+          <!-- 共用欄位 -->
+          <div class="col-md-3"><label class="form-label fw-semibold">保管品號</label><input type="text" class="form-control form-control-sm" id="am保管品號" placeholder="例：50179"></div>
+          <div class="col-md-3"><label class="form-label fw-semibold">財產標籤</label>
+            <select class="form-select form-select-sm" id="am財產標籤"><option value="">—</option><option value="有">有</option><option value="無">無</option></select></div>
+          <div class="col-md-6"><label class="form-label fw-semibold">材料編號</label><input type="text" class="form-control form-control-sm" id="am材料編號" placeholder="例：A5-116-46627"></div>
+          <div class="col-md-6"><label class="form-label fw-semibold">品名</label><input type="text" class="form-control form-control-sm" id="am品名" placeholder="例：數位相機"></div>
+          <div class="col-md-8"><label class="form-label fw-semibold">規格／品名描述</label><input type="text" class="form-control form-control-sm" id="am規格"></div>
+          <div class="col-md-2"><label class="form-label fw-semibold">單位</label><input type="text" class="form-control form-control-sm" id="am單位" placeholder="EA/ST/PC"></div>
+          <div class="col-md-2"><label class="form-label fw-semibold">數量</label><input type="number" class="form-control form-control-sm" id="am數量" value="1" min="1"></div>
+          <div class="col-md-4"><label class="form-label fw-semibold">取得日期</label><input type="text" class="form-control form-control-sm" id="am取得日期" placeholder="例：1130801"></div>
+          <div class="col-md-8"><label class="form-label fw-semibold">廠牌/型號</label><input type="text" class="form-control form-control-sm" id="am廠牌型號"></div>
+          <div class="col-md-5"><label class="form-label fw-semibold">備註</label><input type="text" class="form-control form-control-sm" id="am備註"></div>
+          <div class="col-md-4"><label class="form-label fw-semibold">分類</label>
+            <select class="form-select form-select-sm" id="am分類">
+              <option value="">—</option>
+              <option>攝影器材類</option><option>音訊設備類</option><option>電腦設備類</option><option>事務機器類</option><option>辦公設備類</option><option>其他</option>
+            </select></div>
+          <div class="col-md-3"><label class="form-label fw-semibold">註記</label><input type="text" class="form-control form-control-sm" id="am註記" placeholder="例：整組、配件1..."></div>
+        </div>
+      </div>
+      <div class="modal-footer" style="border-top:1px solid #f1f5f9;justify-content:space-between">
+        <div>
+          <button type="button" class="btn btn-danger btn-sm" id="assetRetireBtn" onclick="confirmRetire()" style="display:none"><i class="bi bi-trash me-1"></i>標記報廢</button>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-primary btn-sm" onclick="saveAsset()"><i class="bi bi-save me-1"></i>儲存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Retired Edit Modal -->
+<div class="modal fade" id="retiredModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content" style="border-radius:14px;border:none;">
+      <div class="modal-header" style="border-bottom:1px solid #f1f5f9;">
+        <h6 class="modal-title fw-bold"><i class="bi bi-archive me-2" style="color:#dc2626"></i>編輯報廢財產</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="retiredRowIndex">
+        <div class="row g-3" style="font-size:.85rem">
+          <div class="col-md-6"><label class="form-label fw-semibold">設備名稱</label><input type="text" class="form-control form-control-sm" id="rm設備名稱"></div>
+          <div class="col-md-3"><label class="form-label fw-semibold">保管品號</label><input type="text" class="form-control form-control-sm" id="rm保管品號"></div>
+          <div class="col-md-3"><label class="form-label fw-semibold">財產標籤</label>
+            <select class="form-select form-select-sm" id="rm財產標籤"><option value="">—</option><option value="有">有</option><option value="無">無</option></select></div>
+          <div class="col-md-6"><label class="form-label fw-semibold">材料編號</label><input type="text" class="form-control form-control-sm" id="rm材料編號"></div>
+          <div class="col-md-6"><label class="form-label fw-semibold">品名</label><input type="text" class="form-control form-control-sm" id="rm品名"></div>
+          <div class="col-md-8"><label class="form-label fw-semibold">規格／品名描述</label><input type="text" class="form-control form-control-sm" id="rm規格"></div>
+          <div class="col-md-2"><label class="form-label fw-semibold">單位</label><input type="text" class="form-control form-control-sm" id="rm單位"></div>
+          <div class="col-md-2"><label class="form-label fw-semibold">數量</label><input type="number" class="form-control form-control-sm" id="rm數量" min="1"></div>
+          <div class="col-md-4"><label class="form-label fw-semibold">取得日期</label><input type="text" class="form-control form-control-sm" id="rm取得日期"></div>
+          <div class="col-md-4"><label class="form-label fw-semibold">廠牌/型號</label><input type="text" class="form-control form-control-sm" id="rm廠牌型號"></div>
+          <div class="col-md-4"><label class="form-label fw-semibold">報廢時間</label><input type="text" class="form-control form-control-sm" id="rm報廢時間"></div>
+          <div class="col-md-5"><label class="form-label fw-semibold">備註</label><input type="text" class="form-control form-control-sm" id="rm備註"></div>
+          <div class="col-md-4"><label class="form-label fw-semibold">分類</label>
+            <select class="form-select form-select-sm" id="rm分類">
+              <option value="">—</option>
+              <option>攝影器材類</option><option>音訊設備類</option><option>電腦設備類</option><option>事務機器類</option><option>辦公設備類</option><option>其他</option>
+            </select></div>
+          <div class="col-md-3"><label class="form-label fw-semibold">註記</label><input type="text" class="form-control form-control-sm" id="rm註記"></div>
+        </div>
+      </div>
+      <div class="modal-footer" style="border-top:1px solid #f1f5f9;justify-content:flex-end">
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">取消</button>
+        <button type="button" class="btn btn-primary btn-sm" onclick="saveRetired()"><i class="bi bi-save me-1"></i>儲存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Loading -->
+<div id="lo">
+  <div class="lo-box">
+    <div class="spinner-border text-primary"></div>
+    <p id="loText">處理中...</p>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div id="toast" class="toast"><div class="toast-header" id="toastH"><i class="bi me-2" id="toastIcon"></i><strong class="me-auto" id="toastT"></strong><button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button></div><div class="toast-body" id="toastB"></div></div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+// ★ 部署 Apps Script 後，把「網頁應用程式網址」貼在下面這一行的引號裡（見安裝說明 步驟 4）
+const API='https://script.google.com/macros/s/AKfycbzDFayUy1bNvhZDbt2bosYU5HZ5fDCdDmE1UktDsFxRNhIEtdrzlQaLA61zwCB-jXiZJA/exec';
+// 台灣時間（UTC+8）的日期：不管電腦時區設定，一律以台灣 0:00～24:00 為一天
+function twToday(d){ return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).format(d||new Date()); }
+function twTimeHM(d){ return new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Taipei',hour:'2-digit',minute:'2-digit',hour12:false}).format(d||new Date()); }
+
+// ══════════════════════════════════════════════
+//  Apps Script Web App 有個已知怪癖：/exec 會先 302 轉址到一個
+//  echo?user_content_key=... 的暫存網址才拿得到真正內容，短時間內
+//  連續打很多請求時，這個暫存網址偶爾會互相撞車變成 404，
+//  但其實 doGet 本身已經正常執行完畢。這種情況通常「重打一次」就會過，
+//  所以所有呼叫後端的地方都改用這個會自動重試的 fetchJson()，
+//  取代原本直接 fetch(...).then(r=>r.json())。
+// ══════════════════════════════════════════════
+async function fetchJson(url, opts, retries){
+  if (retries === undefined) retries = 2;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const r = await fetch(url, opts);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return await r.json();
+    } catch (err) {
+      if (attempt === retries) throw err;
+      await new Promise(res => setTimeout(res, 400 + attempt * 400));
+    }
+  }
+}
+
+// ===== 登入系統 =====
+let _token = '';
+
+function getToken(){ return _token || sessionStorage.getItem('jczAuthToken') || ''; }
+
+async function doLogin(){
+  const user = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value.trim();
+  const errEl = document.getElementById('loginError');
+  const btn = document.querySelector('.login-btn');
+  if(!user||!pass){errEl.textContent='請輸入帳號和密碼';return;}
+  errEl.textContent='';
+  btn.textContent='驗證中...';btn.disabled=true;
+  try{
+    const resp = await fetch(API, {method:'POST', body:JSON.stringify({action:'login', username:user, password:pass})});
+    const r = await resp.json();
+    if(r.success){
+      _token = r.token;
+      sessionStorage.setItem('jczAuthToken', r.token);
+      sessionStorage.setItem('jczLoginName', r.name);
+      document.getElementById('loginPage').classList.add('hidden');
+      document.getElementById('currentUser').textContent = r.name;
+      loadChangelog(); loadAssets();
+    } else {
+      errEl.textContent = r.message || '帳號或密碼錯誤';
+    }
+  }catch(e){
+    errEl.textContent = '連線失敗，請稍後再試';
+  }
+  btn.innerHTML='<i class="bi bi-box-arrow-in-right me-2"></i>登入';
+  btn.disabled=false;
+}
+
+function doLogout(){
+  if(!confirm('確定要登出嗎？')) return;
+  _token='';
+  sessionStorage.removeItem('jczAuthToken');
+  sessionStorage.removeItem('jczLoginName');
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+  document.getElementById('loginPage').classList.remove('hidden');
+}
+
+// 按 Enter 登入
+document.addEventListener('keydown', e=>{
+  if(e.key==='Enter' && !document.getElementById('loginPage').classList.contains('hidden')){
+    doLogin();
+  }
+});
+
+// 檢查是否已登入（session 保留）
+window.addEventListener('DOMContentLoaded', ()=>{
+  // 綁定登入按鈕
+  document.getElementById('loginBtn').addEventListener('click', doLogin);
+
+  // 檢查 session
+  const savedToken = sessionStorage.getItem('jczAuthToken');
+  const savedName  = sessionStorage.getItem('jczLoginName');
+  if(savedToken && savedName){
+    _token = savedToken;
+    document.getElementById('loginPage').classList.add('hidden');
+    document.getElementById('currentUser').textContent = savedName;
+    loadChangelog(); loadAssets();
+  }
+});
+
+// Clock
+setInterval(()=>{
+  const n=new Date();
+  document.getElementById('clock').textContent=
+    n.toLocaleDateString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit'})+' '+
+    n.toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
+},1000);
+
+
+// Panel
+function showPanel(name,el){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  document.querySelectorAll('.sb-link').forEach(l=>l.classList.toggle('active',l.dataset.panel===name));
+  const curLink=document.querySelector('#mobileNav .sb-link[data-panel="'+name+'"]');
+  const cur=document.getElementById('mnavCur'); if(cur&&curLink) cur.textContent=curLink.textContent.trim();
+  const mn=document.getElementById('mobileNav'); if(mn&&mn.classList.contains('show')) bootstrap.Offcanvas.getInstance(mn)?.hide();
+  const mu=document.getElementById('mnavUser'),cu=document.getElementById('currentUser'); if(mu&&cu) mu.textContent=cu.textContent;
+  if(name==='assets'&&!allAssets.length) loadAssets();
+  if(name==='changelog') loadChangelog();
+}
+
+// Loading / Toast
+function showLoad(t){document.getElementById('loText').textContent=t||'處理中...';document.getElementById('lo').classList.add('show');}
+function hideLoad(){document.getElementById('lo').classList.remove('show');}
+function toast(title,msg,type){
+  const map={success:['bg-success','bi-check-circle'],danger:['bg-danger','bi-exclamation-triangle'],info:['bg-primary','bi-info-circle']};
+  const[bg,ic]=map[type]||map.info;
+  document.getElementById('toastH').className='toast-header '+bg+' text-white';
+  document.getElementById('toastIcon').className='bi '+ic+' me-2';
+  document.getElementById('toastT').textContent=title;
+  document.getElementById('toastB').textContent=msg;
+  new bootstrap.Toast(document.getElementById('toast'),{delay:4000}).show();
+}
+
+// Helpers
+function fmtDate(v){
+  if(!v)return'';
+  if(typeof v==='number'){const d=new Date(Math.round((v-25569)*86400*1000));return d.toISOString().split('T')[0];}
+  const s=String(v).trim();
+  const m=s.match(/(\d{2})\/(\d{2})\/(\d{4})/);if(m)return`${m[3]}-${m[1]}-${m[2]}`;
+  const m2=s.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);if(m2)return`${m2[1]}-${m2[2].padStart(2,'0')}-${m2[3].padStart(2,'0')}`;
+  return s;
+}
+function fmtTime(v){
+  if(!v)return'';
+  if(typeof v==='number'){const t=Math.round(v*24*60);return`${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;}
+  return String(v).trim();
+}
+
+// ===== 財產總覽 =====
+let allAssets = [], filteredAssets = [], assetView = 'group', allAssetNames = [];
+
+async function loadAssets() {
+  if (!getToken()) return;
+  showLoad('載入財產清單...');
+  try {
+    const r = await fetch(API + '?action=queryAssets&token=' + encodeURIComponent(getToken()));
+    const data = await r.json();
+    if (!data.success) { toast('載入失敗', data.message, 'danger'); return; }
+    allAssets = data.data || [];
+    allAssetNames = data.allNames || [];
+    buildCategoryFilter(data.allCategories || []);
+    filterAssets();
+    updateAssetStats();
+    document.getElementById('assetListView').style.display = '';
+    // 另外撈已報廢數量
+    fetch(API + '?action=queryRetiredCount&token=' + encodeURIComponent(getToken()))
+      .then(r => r.json())
+      .then(d => { if (d.success) document.getElementById('stat-retired').textContent = d.count; })
+      .catch(() => {});
+  } catch(e) { toast('連線失敗', e.message, 'danger'); }
+  finally { hideLoad(); }
+}
+
+function updateAssetStats() {
+  const sumQty = arr => arr.reduce((s, r) => s + (parseInt(r['數量']) || 1), 0);
+
+  // 列管設備：有保管品編號（筆數）
+  const listed   = allAssets.filter(r => r['保管品號'] && String(r['保管品號']).trim() !== '').length;
+  // 無列管設備：沒有保管品編號（筆數）
+  const unlisted = allAssets.filter(r => !r['保管品號'] || String(r['保管品號']).trim() === '').length;
+  // 設備總數：有分類或設備名稱（排除教室設備），加總數量
+  const tools    = sumQty(allAssets.filter(r => r['父項'] !== '教室設備' && (r['分類'] || r['設備名稱'])));
+  // 教室設備（筆數）
+  const room     = allAssets.filter(r => r['父項'] === '教室設備').length;
+
+  document.getElementById('stat-listed').textContent   = listed;
+  document.getElementById('stat-unlisted').textContent = unlisted;
+  document.getElementById('stat-tools').textContent    = tools;
+  document.getElementById('stat-room').textContent     = room;
+  document.getElementById('stat-retired').textContent  = '—';
+}
+
+function buildCategoryFilter(cats) {
+  const sel = document.getElementById('assetCatFilter');
+  if (!sel) return;
+  // 固定顯示所有分類選項，不依資料篩選
+  const order = ['攝影器材類','音訊設備類','電腦設備類','事務機器類','辦公設備類','其他','教室設備'];
+  sel.innerHTML = '<option value="">全部分類</option>' +
+    order.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
+function filterAssets() {
+  const kw  = (document.getElementById('assetKeyword').value || '').trim().toLowerCase();
+  const cat = (document.getElementById('assetCatFilter')?.value || '').trim();
+  const showClassroom = document.getElementById('showClassroomToggle').checked;
+
+  filteredAssets = allAssets.filter(r => {
+    if (!showClassroom && r['父項'] === '教室設備') return false;
+    // 配件跟隨主體分類，篩選時一併顯示
+    if (cat) {
+      const rCat = String(r['分類']||'').trim();
+      const parentCat = (() => {
+        if (!r['父項'] || r['父項']==='教室設備') return '';
+        const parent = allAssets.find(a => a['設備名稱'] === r['父項']);
+        return parent ? String(parent['分類']||'').trim() : '';
+      })();
+      if (rCat !== cat && parentCat !== cat) return false;
+    }
+    if (kw) {
+      const hay = [r['設備名稱'],r['品名'],r['保管品號'],r['材料編號'],r['備註'],r['規格'],r['父項'],r['_displayName'],r['分類']].join('|').toLowerCase();
+      if (!hay.includes(kw)) return false;
+    }
+    return true;
+  });
+  renderListView();
+}
+
+function setAssetView(mode) {
+  assetView = mode;
+  const gBtn = document.getElementById('viewModeGroup');
+  const lBtn = document.getElementById('viewModeList');
+  const on  = 'btn btn-sm';
+  const off = 'btn btn-sm btn-outline-secondary';
+  gBtn.className = mode==='group' ? on : off;
+  lBtn.className = mode==='list'  ? on : off;
+  gBtn.style.cssText = mode==='group' ? 'background:var(--ac-lt);color:#2563eb;border:1.5px solid #93c5fd;font-weight:600' : '';
+  lBtn.style.cssText = mode==='list'  ? 'background:var(--ac-lt);color:#2563eb;border:1.5px solid #93c5fd;font-weight:600' : '';
+  document.getElementById('assetGroupView').style.display = mode==='group' ? '' : 'none';
+  document.getElementById('assetListView').style.display  = mode==='list'  ? '' : 'none';
+  renderAssets();
+}
+
+function renderAssets() {
+  if (assetView === 'group') renderGroupView();
+  else renderListView();
+}
+
+// 產生標籤 badge
+function noteBadge(v) {
+  if (!v) return '';
+  const map = {
+    '整組':'#dbeafe:#1d4ed8', '主體':'#d1fae5:#065f46',
+    '配件':'#fef9c3:#854d0e', '未拍照':'#fee2e2:#991b1b'
+  };
+  // 配件1~N
+  const isAccessory = /^配件/.test(v);
+  const c = map[v] || (isAccessory ? '#fef9c3:#854d0e' : '#f1f5f9:#64748b');
+  const [bg,col] = c.split(':');
+  return `<span style="background:${bg};color:${col};padding:1px 8px;border-radius:10px;font-size:.68rem;font-weight:600">${v}</span>`;
+}
+
+function renderGroupView() {
+  const container = document.getElementById('assetGroupBody');
+  if (!filteredAssets.length) {
+    container.innerHTML = '<div class="text-center text-muted py-5">查無符合條件的財產</div>';
+    return;
+  }
+
+  const mainGroups = {}, partMap = {}, classroom = [];
+  filteredAssets.forEach(r => {
+    if (r['父項'] === '教室設備') {
+      classroom.push(r);
+    } else if (r['父項'] && !r['設備名稱']) {
+      if (!partMap[r['父項']]) partMap[r['父項']] = [];
+      partMap[r['父項']].push(r);
+    } else {
+      const key = r['設備名稱'] || r['品名'] || '(未分類)';
+      if (!mainGroups[key]) mainGroups[key] = [];
+      mainGroups[key].push(r);
+    }
+  });
+
+  // 固定欄寬 colgroup（每張 card 相同，視覺對齊）
+  const colgroup = `<colgroup>
+    <col style="width:116px">
+    <col style="width:108px">
+    <col style="width:128px">
+    <col style="width:260px">
+    <col style="width:46px">
+    <col style="width:82px">
+    <col style="width:64px">
+    <col style="width:160px">
+    <col style="width:72px">
+    <col style="width:40px">
+  </colgroup>`;
+
+  const thead = `<thead>
+    <tr style="font-size:.85rem;color:#64748b;background:#f8fafc">
+      <th style="padding:6px 8px;font-weight:600;white-space:nowrap">照片</th>
+      <th style="padding:6px 10px;font-weight:600;white-space:nowrap">保管品號</th>
+      <th style="font-weight:600;white-space:nowrap">材料編號</th>
+      <th style="font-weight:600;white-space:nowrap">規格／型號</th>
+      <th style="font-weight:600;text-align:center;white-space:nowrap">數量</th>
+      <th style="font-weight:600;white-space:nowrap">取得日期</th>
+      <th style="font-weight:600;text-align:center;white-space:nowrap">財產標籤</th>
+      <th style="font-weight:600;white-space:nowrap">備註</th>
+      <th style="font-weight:600;white-space:nowrap">註記</th>
+      <th></th>
+    </tr>
+  </thead>`;
+
+  const tagBadge = v => v === '有'
+    ? '<span style="background:#d1fae5;color:#065f46;padding:1px 7px;border-radius:10px;font-size:.7rem">有</span>'
+    : '<span style="color:#cbd5e1;font-size:.78rem">—</span>';
+
+  const mainRow = r => `<tr>
+    <td style="padding:6px 8px;vertical-align:top">${assetThumb(r)}</td>
+    <td style="padding:6px 10px;vertical-align:top"><span style="color:var(--ac);font-weight:600;font-size:.9rem">${r['保管品號']||'—'}</span></td>
+    <td style="font-size:.82rem;color:#64748b;vertical-align:top">${r['材料編號']||'—'}</td>
+    <td style="font-size:.9rem;word-break:break-all;vertical-align:top">${r['規格']||'—'}</td>
+    <td style="text-align:center;font-size:.9rem;vertical-align:top">${r['數量']||1}</td>
+    <td style="font-size:.9rem;vertical-align:top;white-space:nowrap">${r['取得日期']||'—'}</td>
+    <td style="text-align:center;vertical-align:top">${tagBadge(r['財產標籤'])}</td>
+    <td style="font-size:.85rem;color:#475569;word-break:break-all;vertical-align:top">${r['備註']||''}</td>
+    <td style="vertical-align:top">${noteBadge(r['註記'])}</td>
+    <td style="vertical-align:top"><button class="btn btn-xs btn-outline-secondary" style="font-size:.7rem;padding:1px 6px" onclick="openAssetModal(${r._rowIndex})"><i class="bi bi-pencil"></i></button></td>
+  </tr>`;
+
+  const partRow = r => `<tr style="background:#fffdf5">
+    <td style="padding:5px 8px;vertical-align:top">${assetThumb(r)}</td>
+    <td style="padding:5px 10px 5px 20px;vertical-align:top">
+      <i class="bi bi-arrow-return-right me-1" style="color:#d97706;font-size:.65rem"></i>
+      <span style="color:#92400e;font-weight:600;font-size:.88rem">${r['保管品號']||'—'}</span>
+    </td>
+    <td style="font-size:.82rem;color:#78716c;vertical-align:top">${r['材料編號']||'—'}</td>
+    <td style="font-size:.88rem;color:#57534e;word-break:break-all;vertical-align:top">${r['規格']||'—'}</td>
+    <td style="text-align:center;font-size:.88rem;vertical-align:top">${r['數量']||1}</td>
+    <td style="font-size:.88rem;vertical-align:top;white-space:nowrap">${r['取得日期']||'—'}</td>
+    <td style="text-align:center;vertical-align:top">${tagBadge(r['財產標籤'])}</td>
+    <td style="font-size:.84rem;color:#78716c;word-break:break-all;vertical-align:top">${r['備註']||''}</td>
+    <td style="vertical-align:top">${noteBadge(r['註記'])}</td>
+    <td style="vertical-align:top"><button class="btn btn-xs btn-outline-secondary" style="font-size:.7rem;padding:1px 6px" onclick="openAssetModal(${r._rowIndex})"><i class="bi bi-pencil"></i></button></td>
+  </tr>`;
+
+  let html = '';
+  const groupNames = Object.keys(mainGroups).sort();
+
+  groupNames.forEach(name => {
+    const items = mainGroups[name];
+    const parts = partMap[name] || [];
+    const gid = 'ag_' + btoa(encodeURIComponent(name)).replace(/[^a-zA-Z0-9]/g,'');
+
+    html += `
+    <div class="card mb-2">
+      <div class="card-hd" style="cursor:pointer;user-select:none" onclick="toggleGroup('${gid}')">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-chevron-right" id="chev_${gid}" style="font-size:.8rem;color:#94a3b8;transition:transform .2s"></i>
+          <span style="font-weight:600;color:#1e293b;font-size:.88rem">${name}</span>
+          <span style="background:#dbeafe;color:#1d4ed8;padding:1px 8px;border-radius:10px;font-size:.7rem;font-weight:600">${items.length} 件</span>
+          ${parts.length ? `<span style="background:#fef9c3;color:#92400e;padding:1px 8px;border-radius:10px;font-size:.7rem;font-weight:600">${parts.length} 配件</span>` : ''}
+        </div>
+        <button class="btn btn-sm btn-outline-primary" style="font-size:.73rem;padding:1px 8px"
+          onclick="event.stopPropagation();openAssetModal(null,'part','${encodeURIComponent(name)}')">
+          <i class="bi bi-plus me-1"></i>新增配件</button>
+      </div>
+      <div id="${gid}" style="display:none" class="table-responsive">
+        <table class="table table-hover mb-0" style="font-size:.82rem;table-layout:fixed;width:100%">
+          ${colgroup}${thead}
+          <tbody>
+            ${items.map(r => mainRow(r)).join('')}
+            ${parts.length ? `<tr style="background:#fffbeb"><td colspan="10" style="padding:3px 10px 3px 20px;font-size:.72rem;color:#92400e;font-weight:600"><i class="bi bi-paperclip me-1"></i>配件 ${parts.length} 件</td></tr>` : ''}
+            ${parts.map(r => partRow(r)).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+  });
+
+  // 孤兒配件
+  Object.keys(partMap).filter(p => !mainGroups[p]).sort().forEach(parentName => {
+    const parts = partMap[parentName];
+    const gid = 'ago_' + btoa(encodeURIComponent(parentName)).replace(/[^a-zA-Z0-9]/g,'');
+    html += `
+    <div class="card mb-2">
+      <div class="card-hd" style="cursor:pointer;user-select:none" onclick="toggleGroup('${gid}')">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-chevron-right" id="chev_${gid}" style="font-size:.8rem;color:#94a3b8;transition:transform .2s"></i>
+          <span style="font-weight:600;color:#64748b;font-size:.88rem">${parentName}</span>
+          <span style="background:#fef9c3;color:#92400e;padding:1px 8px;border-radius:10px;font-size:.7rem;font-weight:600">${parts.length} 配件</span>
+        </div>
+      </div>
+      <div id="${gid}" style="display:none" class="table-responsive">
+        <table class="table table-hover mb-0" style="font-size:.82rem;table-layout:fixed;width:100%">
+          ${colgroup}${thead}
+          <tbody>${parts.map(r => partRow(r)).join('')}</tbody>
+        </table>
+      </div>
+    </div>`;
+  });
+
+  // 教室設備（置底）
+  if (classroom.length) {
+    const gid = 'ag_classroom';
+    html += `
+    <div class="card mb-2" style="border-color:#cbd5e1">
+      <div class="card-hd" style="cursor:pointer;user-select:none;background:#f8fafc" onclick="toggleGroup('${gid}')">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-chevron-right" id="chev_${gid}" style="font-size:.8rem;color:#94a3b8;transition:transform .2s"></i>
+          <i class="bi bi-building" style="color:#64748b;font-size:.85rem"></i>
+          <span style="font-weight:600;color:#475569;font-size:.88rem">教室設備</span>
+          <span style="background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;padding:1px 8px;border-radius:10px;font-size:.7rem;font-weight:600">${classroom.length} 件</span>
+        </div>
+        <button class="btn btn-sm btn-outline-secondary" style="font-size:.73rem;padding:1px 8px"
+          onclick="event.stopPropagation();openAssetModal(null,'room')">
+          <i class="bi bi-plus me-1"></i>新增設備</button>
+      </div>
+      <div id="${gid}" style="display:none" class="table-responsive">
+        <table class="table table-hover mb-0" style="font-size:.82rem;table-layout:fixed;width:100%">
+          <colgroup>
+            <col style="width:116px"><col style="width:108px"><col style="width:130px"><col><col style="width:44px">
+            <col style="width:84px"><col style="width:64px"><col style="width:150px"><col style="width:40px">
+          </colgroup>
+          <thead>
+            <tr style="font-size:.77rem;color:#64748b;background:#f1f5f9">
+              <th style="padding:6px 8px;font-weight:600">照片</th>
+              <th style="padding:6px 10px;font-weight:600">保管品號</th>
+              <th style="font-weight:600">材料編號</th>
+              <th style="font-weight:600">品名／規格</th>
+              <th style="font-weight:600;text-align:center">數量</th>
+              <th style="font-weight:600">取得日期</th>
+              <th style="font-weight:600;text-align:center">財產標籤</th>
+              <th style="font-weight:600">備註</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${classroom.map(r => `<tr style="background:#fafafa">
+              <td style="padding:6px 8px;vertical-align:top">${assetThumb(r)}</td>
+              <td style="padding:6px 10px;vertical-align:top"><span style="color:#475569;font-weight:600;font-size:.83rem">${r['保管品號']||'—'}</span></td>
+              <td style="font-size:.75rem;color:#64748b;vertical-align:top">${r['材料編號']||'—'}</td>
+              <td style="font-size:.82rem;word-break:break-all;vertical-align:top;font-weight:500">${r['_displayName']||r['規格']||'—'}</td>
+              <td style="text-align:center;font-size:.82rem;vertical-align:top">${r['數量']||1}</td>
+              <td style="font-size:.82rem;vertical-align:top;white-space:nowrap">${r['取得日期']||'—'}</td>
+              <td style="text-align:center;vertical-align:top">${tagBadge(r['財產標籤'])}</td>
+              <td style="font-size:.78rem;color:#475569;word-break:break-all;vertical-align:top">${r['備註']||''}</td>
+              <td style="vertical-align:top"><button class="btn btn-xs btn-outline-secondary" style="font-size:.7rem;padding:1px 6px" onclick="openAssetModal(${r._rowIndex})"><i class="bi bi-pencil"></i></button></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+function toggleGroup(gid) {
+  const el = document.getElementById(gid);
+  const ch = document.getElementById('chev_' + gid);
+  if (!el) return;
+  const isHidden = el.style.display === 'none';
+  el.style.display = isHidden ? '' : 'none';
+  if (ch) ch.style.transform = isHidden ? 'rotate(90deg)' : '';
+}
+
+// 相容舊函數名稱
+function toggleGroupRows(gid) { toggleGroup(gid); }
+
+// 民國日期格式化（全域）：1061101 → 106/11/01
+function fmtROC(v) {
+  if (!v) return '—';
+  const s = String(v).replace(/\//g,'').trim();
+  if (/^\d{7}$/.test(s)) return s.slice(0,3)+'/'+s.slice(3,5)+'/'+s.slice(5,7);
+  if (/^\d{6}$/.test(s)) return s.slice(0,2)+'/'+s.slice(2,4)+'/'+s.slice(4,6);
+  return String(v);
+}
+
+// 子項（配件）一律緊接在父項後面：先照原規則排序，再把有父項在清單中的子項搬到父項最後一筆之後
+//（父項是教室設備、或分類不在排序清單中時，也不會跑到別的群組）
+function attachChildrenAfterParent(sorted){
+  const pOf = r => String(r['父項']||'').trim();
+  const nOf = r => String(r['設備名稱']||'').trim();
+  const isPart = r => { const p=pOf(r); return !!p && p!=='教室設備'; };
+  const parentNames = new Set(sorted.filter(r=>!isPart(r)).map(nOf).filter(Boolean));
+  const kids = {}, rest = [];
+  sorted.forEach(r => {
+    const p = pOf(r);
+    if (isPart(r) && parentNames.has(p) && nOf(r)!==p) (kids[p]=kids[p]||[]).push(r);
+    else rest.push(r);
+  });
+  const out = [];
+  rest.forEach((r,i) => {
+    out.push(r);
+    const n = nOf(r);
+    if (isPart(r) || !kids[n]) return;
+    const next = rest[i+1];
+    if (next && !isPart(next) && nOf(next)===n) return; // 同名主體還沒結束，等最後一筆再接子項
+    out.push(...kids[n]); delete kids[n];
+  });
+  Object.values(kids).forEach(list => out.push(...list)); // 保險：理論上不會剩
+  return out;
+}
+
+function renderListView() {
+  const tbody = document.getElementById('assetListBody');
+  document.getElementById('assetListCount').textContent = '共 ' + filteredAssets.length + ' 筆';
+  if (!filteredAssets.length) {
+    assetListSorted = [];
+    tbody.innerHTML = '<tr><td colspan="12" class="text-center text-muted py-5">查無資料</td></tr>';
+    return;
+  }
+  // 排序：分類 → 主體設備名稱 → 配件緊跟主體後面
+  // 每筆取「排序用主體名稱」：主體=自己的設備名稱；配件=父項名稱；教室設備=zzz_教室設備
+  // 取排序 key：[分類, 群組名稱, 主/配(0=主體,1=配件)]
+  const getKey = r => {
+    const p = String(r['父項']||'').trim();
+    const n = String(r['設備名稱']||'').trim();
+    if (p === '教室設備') return ['zzz_教室設備', 'zzz_教室設備', 0];
+    if (p) {
+      // 配件（不論設備名稱有無）：繼承主體分類，group = 父項名稱
+      const parent = allAssets.find(a => String(a['設備名稱']||'').trim() === p);
+      const pCat = parent ? String(parent['分類']||'').trim() : '';
+      return [pCat || 'zzz', p, 1];
+    }
+    // 主體
+    return [String(r['分類']||'zzz').trim(), n || String(r['品名']||'').trim(), 0];
+  };
+
+  const sorted = [...filteredAssets].sort((a,b) => {
+    const ka = getKey(a), kb = getKey(b);
+    // 1. 分類（自訂順序）
+    const catOrder = ['攝影器材類','音訊設備類','電腦設備類','事務機器類','辦公設備類','其他','zzz_教室設備'];
+    const ca = catOrder.indexOf(ka[0]) !== -1 ? catOrder.indexOf(ka[0]) : catOrder.length - 2;
+    const cb = catOrder.indexOf(kb[0]) !== -1 ? catOrder.indexOf(kb[0]) : catOrder.length - 2;
+    if (ca !== cb) return ca - cb;
+    // 2. 群組名稱（主體名稱 或 配件的父項名稱）
+    const grpCmp = ka[1].localeCompare(kb[1], 'zh-TW');
+    if (grpCmp !== 0) return grpCmp;
+    // 3. 主體(0)在前，配件(1)在後
+    return ka[2] - kb[2];
+  });
+  const sortedFinal = attachChildrenAfterParent(sorted);
+  assetListSorted = sortedFinal;
+
+  const tagBadge2 = v => v==='有'
+    ? '<span style="background:#d1fae5;color:#065f46;padding:1px 7px;border-radius:10px;font-size:.72rem">有</span>'
+    : v==='無'
+    ? '<span style="background:#fee2e2;color:#991b1b;padding:1px 7px;border-radius:10px;font-size:.72rem">無</span>'
+    : '<span style="color:#cbd5e1;font-size:.78rem">—</span>';
+
+  // 分類 badge
+  const catColors = {'攝影器材類':'#fde8e7:#9f3a39','音訊設備類':'#ede9fe:#5b21b6','電腦設備類':'#dbeafe:#1e40af','事務機器類':'#d1fae5:#065f46','辦公設備類':'#fef3c7:#92400e','其他':'#f1f5f9:#475569','教室設備':'#e2e8f0:#334155'};
+  const catBadge = v => {
+    if (!v) return '';
+    const c = catColors[v]||'#f1f5f9:#64748b';
+    const [bg,col]=c.split(':');
+    return `<span style="background:${bg};color:${col};padding:1px 7px;border-radius:10px;font-size:.72rem;font-weight:600;white-space:nowrap">${v}</span>`;
+  };
+
+  tbody.innerHTML = sortedFinal.map(r => {
+    const isRoom = r['父項'] === '教室設備';
+    const _isPart = r['父項'] && r['父項'] !== '教室設備';
+    const rowBg  = _isPart ? 'background:#fffceb' : isRoom ? 'background:#f8fafc' : '';
+    const displayName = _isPart
+      ? `<span style="color:#92400e"><i class="bi bi-arrow-return-right me-1"></i>${r['父項']||''}</span><span style="color:#57534e;margin-left:4px">${r['設備名稱']||''}</span>`
+      : (r['設備名稱']||'');
+    return `<tr style="${rowBg}">
+      <td style="vertical-align:middle;text-align:center">${assetThumb(r)}</td>
+      <td style="white-space:nowrap;text-align:center"><span style="color:var(--ac);font-weight:600">${r['保管品號']||'—'}</span></td>
+      <td>${displayName}</td>
+      <td style="text-align:center">${catBadge(String(r['分類']||'').trim())}</td>
+      <td style="color:#64748b">${r['材料編號']||'—'}</td>
+      <td style="text-align:center">${r['單位']||''}</td>
+      <td style="text-align:center">${r['數量']||1}</td>
+      <td style="white-space:nowrap;text-align:center">${fmtROC(r['取得日期'])}</td>
+      <td style="text-align:center">${tagBadge2(r['財產標籤'])}</td>
+      <td style="text-align:center">${noteBadge(r['註記'])}</td>
+      <td><button class="btn btn-xs btn-outline-secondary" style="padding:1px 6px" onclick="openAssetModal(${r._rowIndex})"><i class="bi bi-pencil"></i></button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Modal ──────────────────────────────────────────────────
+function onAssetTypeChange() {
+  const type = document.querySelector('input[name="amType"]:checked').value;
+  document.getElementById('amFieldMain').style.display = type==='main' ? '' : 'none';
+  document.getElementById('amFieldPart').style.display = type==='part' ? '' : 'none';
+  document.getElementById('amFieldRoom').style.display = type==='room' ? '' : 'none';
+}
+
+function openAssetModal(rowIndex, prefillType, prefillParent) {
+  // 填父項下拉
+  const sel = document.getElementById('am父項');
+  sel.innerHTML = '<option value="">請選擇設備...</option>' +
+    allAssetNames.map(n => `<option value="${n}">${n}</option>`).join('');
+
+  // 清空所有欄位
+  ['am設備名稱','am設備名稱2','am設備名稱3','am保管品號','am材料編號','am品名','am規格','am單位','am取得日期','am廠牌型號','am備註','am註記']
+    .forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('am數量').value = '1';
+  document.getElementById('am父項').value = '';
+  document.getElementById('am財產標籤').value = '';
+  document.getElementById('am分類').value = '';
+  document.getElementById('amTypeMain').checked = true;
+  onAssetTypeChange();
+
+  if (rowIndex) {
+    // 編輯模式
+    const r = allAssets.find(a => a._rowIndex === rowIndex);
+    if (!r) return;
+    document.getElementById('assetRowIndex').value = rowIndex;
+    document.getElementById('assetModalTitle').innerHTML = '<i class="bi bi-pencil-square me-2" style="color:var(--ac)"></i>編輯財產';
+    document.getElementById('assetRetireBtn').style.display = '';
+
+    // 判斷類型
+    if (r['父項'] === '教室設備') {
+      document.getElementById('amTypeRoom').checked = true;
+      document.getElementById('am設備名稱3').value = r['設備名稱'] || '';
+    } else if (r['父項']) {
+      // 有父項就是配件（不論配件有沒有自己的設備名稱），避免存檔時父項被清掉
+      document.getElementById('amTypePart').checked = true;
+      const parent = String(r['父項']).trim();
+      if (![...sel.options].some(o => o.value === parent)) sel.insertAdjacentHTML('beforeend', `<option value="${escapeHtml(parent)}">${escapeHtml(parent)}</option>`);
+      document.getElementById('am父項').value = parent;
+    } else {
+      document.getElementById('amTypeMain').checked = true;
+    }
+    onAssetTypeChange();
+
+    document.getElementById('am設備名稱').value  = r['設備名稱'] || '';
+    document.getElementById('am設備名稱2').value = r['設備名稱'] || '';
+    document.getElementById('am保管品號').value  = r['保管品號'] || '';
+    document.getElementById('am材料編號').value  = r['材料編號'] || '';
+    document.getElementById('am品名').value      = r['品名'] || '';
+    document.getElementById('am規格').value      = r['規格'] || '';
+    document.getElementById('am單位').value      = r['單位'] || '';
+    document.getElementById('am數量').value      = r['數量'] || 1;
+    document.getElementById('am取得日期').value  = r['取得日期'] || '';
+    document.getElementById('am廠牌型號').value  = r['廠牌/型號'] || '';
+    document.getElementById('am備註').value      = r['備註'] || '';
+    document.getElementById('am分類').value      = r['分類'] || '';
+    document.getElementById('am註記').value      = r['註記'] || '';
+    document.getElementById('am財產標籤').value  = r['財產標籤'] || '';
+  } else {
+    // 新增模式
+    document.getElementById('assetRowIndex').value = '';
+    document.getElementById('assetModalTitle').innerHTML = '<i class="bi bi-plus-circle me-2" style="color:var(--ac)"></i>新增財產';
+    document.getElementById('assetRetireBtn').style.display = 'none';
+    if (prefillType) {
+      if (prefillType==='part') { document.getElementById('amTypePart').checked=true; }
+      if (prefillType==='room') { document.getElementById('amTypeRoom').checked=true; }
+      onAssetTypeChange();
+    }
+    if (prefillParent) document.getElementById('am父項').value = decodeURIComponent(prefillParent);
+  }
+  { const r0 = rowIndex ? (allAssets.find(a => a._rowIndex === rowIndex) || {}) : {}; amPhotoInit(r0['照片'], r0['標籤照片']); }
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('assetModal')).show();
+}
+
+async function saveAsset() {
+  const type = document.querySelector('input[name="amType"]:checked').value;
+  let 設備名稱, 父項;
+
+  if (type === 'main') {
+    設備名稱 = document.getElementById('am設備名稱').value.trim();
+    父項 = '';
+    if (!設備名稱) { alert('請填寫設備名稱'); return; }
+  } else if (type === 'part') {
+    父項 = document.getElementById('am父項').value;
+    設備名稱 = document.getElementById('am設備名稱2').value.trim();
+    if (!父項) { alert('請選擇隸屬的設備'); return; }
+  } else {
+    設備名稱 = document.getElementById('am設備名稱3').value.trim();
+    父項 = '教室設備';
+  }
+
+  const payload = {
+    token: getToken(),
+    data: {
+      '設備名稱': 設備名稱,
+      '父項': 父項,
+      '保管品號': document.getElementById('am保管品號').value.trim(),
+      '材料編號': document.getElementById('am材料編號').value.trim(),
+      '品名':     document.getElementById('am品名').value.trim(),
+      '規格':     document.getElementById('am規格').value.trim(),
+      '單位':     document.getElementById('am單位').value.trim(),
+      '數量':     document.getElementById('am數量').value || 1,
+      '取得日期': document.getElementById('am取得日期').value.trim(),
+      '廠牌/型號':document.getElementById('am廠牌型號').value.trim(),
+      '財產標籤': document.getElementById('am財產標籤').value,
+      '備註':     document.getElementById('am備註').value.trim(),
+      '分類':     document.getElementById('am分類').value,
+      '註記':     document.getElementById('am註記').value.trim(),
+    }
+  };
+
+  const rowIndex = document.getElementById('assetRowIndex').value;
+  payload.action = rowIndex ? 'updateAssetV2' : 'insertAssetV2';
+  if (rowIndex) payload.rowIndex = parseInt(rowIndex);
+  const photoOps = Object.keys(AM_KINDS).map(k => ({ kind:k, op: amPh[k].pending ? 'upload' : (amPh[k].remove && amPh[k].orig ? 'delete' : '') })).filter(x => x.op);
+
+  showLoad('儲存中...');
+  bootstrap.Modal.getInstance(document.getElementById('assetModal')).hide();
+  try {
+    let data = await assetPost(payload);
+    if (!data.success && data.message === '未知的action') {   // 後端還沒更新：退回舊版動作，資料照存
+      payload.action = rowIndex ? 'updateAsset' : 'insertAsset';
+      data = await assetPost(payload);
+      if (data.success && photoOps.length) { toast('資料已儲存', '照片功能需要先更新後端程式才能使用', 'info'); await loadAssets(); return; }
+    }
+    if (!data.success) { toast('儲存失敗', data.message, 'danger'); return; }
+    const targetRow = rowIndex ? parseInt(rowIndex) : data.rowIndex;
+    const expect = { '保管品號': payload.data['保管品號'], '材料編號': payload.data['材料編號'] };
+    if (photoOps.length && targetRow) {
+      const msgs = [], fails = [];
+      for (const { kind, op } of photoOps) {
+        showLoad((op === 'upload' ? '上傳' : '移除') + AM_KINDS[kind].label + '照片中...');
+        const pr = await assetPost(op === 'upload'
+          ? { action:'uploadAssetPhoto', token:getToken(), data:{ rowIndex:targetRow, expect, kind, base64:amPh[kind].pending.base64, mimeType:amPh[kind].pending.mime } }
+          : { action:'deleteAssetPhoto', token:getToken(), data:{ rowIndex:targetRow, expect, kind } });
+        (pr.success ? msgs : fails).push(pr.success ? pr.message : AM_KINDS[kind].label + '：' + pr.message);
+      }
+      if (fails.length) toast('資料已儲存，但照片處理失敗', fails.join('；'), 'danger');
+      else toast('儲存成功', (data.message||'財產資料已更新') + '；' + msgs.join('、'), 'success');
+    } else {
+      toast('儲存成功', data.message||'財產資料已更新', 'success');
+    }
+    await loadAssets();
+  } catch(e) { toast('連線失敗', e.message, 'danger'); }
+  finally { hideLoad(); }
+}
+async function assetPost(body){ const r = await fetch(API, { method:'POST', body: JSON.stringify(body) }); return r.json(); }
+
+// ── 財產清單匯出 Excel（依目前的搜尋／分類篩選與畫面排序）──────────
+let assetListSorted = [];
+function exportAssetsExcel(){
+  const list = assetListSorted.length ? assetListSorted : filteredAssets;
+  if (!list || !list.length) { toast('提示','目前沒有可匯出的財產資料','info'); return; }
+  const typeOf = r => r['父項']==='教室設備' ? '教室設備' : (r['父項'] ? '配件' : '設備主體');
+  const nameOf = r => {
+    if (r['父項']==='教室設備') return r['設備名稱'] || r['_displayName'] || r['規格'] || '';
+    if (r['父項']) return r['父項'] + ' ＞ ' + (r['設備名稱'] || r['規格'] || r['品名'] || '');
+    return r['設備名稱'] || r['品名'] || '';
+  };
+  const head = ['保管品號','設備名稱','類型','父項','分類','品名','規格','材料編號','單位','數量','取得日期','廠牌/型號','財產標籤','備註','註記','照片','標籤照片'];
+  const rows = list.map(r => [
+    r['保管品號']||'', nameOf(r), typeOf(r), r['父項']||'', r['分類']||'', r['品名']||'', r['規格']||'',
+    r['材料編號']||'', r['單位']||'', Number(r['數量'])||1, fmtROC(r['取得日期']), r['廠牌/型號']||'',
+    r['財產標籤']||'', r['備註']||'', r['註記']||'', r['照片'] ? '查看照片' : '', r['標籤照片'] ? '查看標籤' : ''
+  ]);
+  const ws = XLSX.utils.aoa_to_sheet([head, ...rows]);
+  // 照片欄做成可點的連結
+  ['照片','標籤照片'].forEach(col => {
+    const pc = head.indexOf(col);
+    list.forEach((r, i) => {
+      const id = String(r[col]||'').trim(); if (!id) return;
+      const ref = XLSX.utils.encode_cell({ r:i+1, c:pc });
+      if (ws[ref]) ws[ref].l = { Target: driveViewUrl(id), Tooltip: assetPhotoBaseName(r) + (col==='標籤照片' ? '_財產標籤' : '') };
+    });
+  });
+  ws['!cols'] = [10,42,10,26,12,24,30,18,6,6,11,20,8,24,10,10,10].map(w => ({ wch:w }));
+  ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s:{r:0,c:0}, e:{r:rows.length, c:head.length-1} }) };
+  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, '財產清單');
+  const fn = `財產清單_${twToday()}.xlsx`;
+  XLSX.writeFile(wb, fn);
+  const filtered = list.length !== allAssets.length;
+  toast('匯出成功', `已下載 ${fn}（${list.length} 筆${filtered ? '，依目前篩選條件' : ''}）`, 'success');
+}
+
+// ── 照片共用工具 ─────────────────────────────────────────
+// 選照片後先在瀏覽器縮小（長邊 1600px、JPEG 品質 0.85）
+async function photoResizeFile(file){
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((res, rej) => {
+      const i = new Image();
+      i.onload = () => res(i);
+      i.onerror = () => rej(new Error('這個格式的圖片無法讀取，請改用 JPG 或 PNG（iPhone 可直接用「拍照」）'));
+      i.src = url;
+    });
+    const max = 1600, scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+    const cv = document.createElement('canvas');
+    cv.width = Math.round(img.naturalWidth * scale); cv.height = Math.round(img.naturalHeight * scale);
+    const ctx = cv.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height);
+    ctx.drawImage(img, 0, 0, cv.width, cv.height);
+    const dataUrl = cv.toDataURL('image/jpeg', 0.85);
+    return { dataUrl, base64: dataUrl.split(',')[1], mime: 'image/jpeg' };
+  } finally { URL.revokeObjectURL(url); }
+}
+function photoThumbHtml(id, onclickJs){
+  id = String(id||'').trim();
+  if (!id) return '<div class="as-thumb-empty" title="尚無照片"><i class="bi bi-camera"></i></div>';
+  return `<img class="as-thumb" loading="lazy" alt="照片" src="${driveThumbUrl(id,160)}"
+    onerror="if(!this.dataset.r){this.dataset.r=1;this.src='${driveAltUrl(id,160)}';}"
+    onclick="event.stopPropagation();${onclickJs}">`;
+}
+let pvItems = [], pvIdx = 0;
+function showPhotoViewer(id, title){ if (String(id||'').trim()) showPhotoViewerList([{ id:String(id).trim(), title, label:'' }], 0); }
+// 大圖檢視：多張時上方可切換（例如 設備本體／財產標籤）
+function showPhotoViewerList(items, idx){
+  pvItems = items; pvIdx = idx || 0;
+  const tabs = document.getElementById('photoViewerTabs');
+  tabs.innerHTML = items.length > 1 ? items.map((it, i) => `<button type="button" class="btn btn-outline-primary" onclick="pvShow(${i})">${escapeHtml(it.label)}</button>`).join('') : '';
+  tabs.style.display = items.length > 1 ? '' : 'none';
+  pvShow(pvIdx);
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('photoViewerModal')).show();
+}
+function pvShow(i){
+  pvIdx = i; const it = pvItems[i]; if (!it) return;
+  const img = document.getElementById('photoViewerImg');
+  img.removeAttribute('data-r');
+  img.onerror = function(){ if(!this.dataset.r){ this.dataset.r = 1; this.src = driveAltUrl(it.id, 1600); } };
+  img.src = driveThumbUrl(it.id, 1600);
+  document.getElementById('photoViewerTitle').textContent = it.title || '';
+  document.getElementById('photoViewerLink').href = driveViewUrl(it.id);
+  document.querySelectorAll('#photoViewerTabs .btn').forEach((b, k) => { b.classList.toggle('btn-primary', k === i); b.classList.toggle('btn-outline-primary', k !== i); });
+}
+
+// ── 財產照片（兩張：設備本體、財產標籤）──────────────────────
+//  財產總清單「照片」欄＝本體照、「標籤照片」欄＝財產標籤照，存雲端檔案 ID
+const AM_KINDS = {
+  main: { col:'照片',     label:'設備本體', prefix:'amPhoto', suffix:'' },
+  tag:  { col:'標籤照片', label:'財產標籤', prefix:'amTag',   suffix:'_財產標籤' }
+};
+let amPh = { main:{ orig:'', pending:null, remove:false }, tag:{ orig:'', pending:null, remove:false } };
+function driveThumbUrl(id, w){ return 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w' + (w||200); }
+function driveAltUrl(id, w){ return 'https://lh3.googleusercontent.com/d/' + encodeURIComponent(id) + '=w' + (w||200); }
+function driveViewUrl(id){ return 'https://drive.google.com/file/d/' + encodeURIComponent(id) + '/view'; }
+// 清單縮圖：本體＋標籤並排，標籤那張角落有「標」字
+function assetThumb(r){
+  const one = kind => {
+    const id = String(r[AM_KINDS[kind].col]||'').trim();
+    const mark = kind === 'tag' ? '<span class="as-tag-mark">標</span>' : '';
+    if (!id) return `<div class="as-thumb-box"><div class="as-thumb-empty" title="尚無${AM_KINDS[kind].label}照片"><i class="bi bi-${kind==='tag'?'tag':'camera'}"></i></div>${mark}</div>`;
+    return `<div class="as-thumb-box"><img class="as-thumb" loading="lazy" alt="${AM_KINDS[kind].label}" title="${AM_KINDS[kind].label}" src="${driveThumbUrl(id,160)}"
+      onerror="if(!this.dataset.r){this.dataset.r=1;this.src='${driveAltUrl(id,160)}';}"
+      onclick="event.stopPropagation();openPhotoViewer(${r._rowIndex},'${kind}')">${mark}</div>`;
+  };
+  return `<div class="as-thumb-pair">${one('main')}${one('tag')}</div>`;
+}
+function openPhotoViewer(rowIndex, kind){
+  const r = allAssets.find(a => a._rowIndex === rowIndex); if (!r) return;
+  const base = assetPhotoBaseName(r);
+  const items = ['main','tag'].filter(k => String(r[AM_KINDS[k].col]||'').trim())
+    .map(k => ({ id:String(r[AM_KINDS[k].col]).trim(), title: base + AM_KINDS[k].suffix, label: AM_KINDS[k].label }));
+  if (!items.length) return;
+  showPhotoViewerList(items, Math.max(0, items.findIndex(x => x.label === AM_KINDS[kind||'main'].label)));
+}
+// 檔名規則（和後端 assetPhotoBaseName_ 相同，用來在畫面上預覽）
+function assetPhotoBaseName(r){
+  const c = s => String(s==null?'':s).replace(/[\\\/:*?"<>|\t\r\n]+/g,' ').replace(/\s+/g,' ').trim();
+  const keep = c(r['保管品號']), mat = c(r['材料編號']), parent = c(r['父項']);
+  let parts;
+  if (parent === '教室設備') parts = [c(r['設備名稱']) || c(String(r['規格']||'').replace(/\(.*?\)/g,'')) || c(r['品名'])];
+  else if (parent) parts = [parent, c(r['設備名稱']) || c(r['規格']) || c(r['品名'])];
+  else parts = [c(r['設備名稱']) || c(r['品名']) || c(r['規格'])];
+  parts = parts.filter(Boolean);
+  return keep ? [keep].concat(parts, mat ? [mat] : []).join('_') : ['無保管品號'].concat(parts).join('_');
+}
+// 從視窗目前的欄位組出資料（預覽檔名用）
+function amFormRecord(){
+  const v = id => (document.getElementById(id)||{}).value || '';
+  const type = (document.querySelector('input[name="amType"]:checked')||{}).value;
+  return {
+    '設備名稱': type==='main' ? v('am設備名稱') : type==='part' ? v('am設備名稱2') : v('am設備名稱3'),
+    '父項': type==='part' ? v('am父項') : type==='room' ? '教室設備' : '',
+    '保管品號': v('am保管品號'), '材料編號': v('am材料編號'), '品名': v('am品名'), '規格': v('am規格')
+  };
+}
+function amPhotoInit(mainId, tagId){
+  amPh = { main:{ orig:String(mainId||'').trim(), pending:null, remove:false }, tag:{ orig:String(tagId||'').trim(), pending:null, remove:false } };
+  Object.keys(AM_KINDS).forEach(k => { const inp = document.getElementById(AM_KINDS[k].prefix+'Input'); if (inp) inp.value = ''; amPhotoRender(k); });
+}
+function amPhotoRender(kind){
+  const st = amPh[kind], p = AM_KINDS[kind].prefix;
+  const f = document.getElementById(p+'Frame');
+  let src = '';
+  if (st.pending) src = st.pending.dataUrl;
+  else if (st.orig && !st.remove) src = driveThumbUrl(st.orig, 400);
+  f.classList.toggle('has', !!src);
+  f.innerHTML = src ? `<img src="${src}" alt="${AM_KINDS[kind].label}" onclick="amPhotoZoom('${kind}')">`
+    : `<span><i class="bi bi-${kind==='tag'?'tag':'camera'}" style="font-size:1.4rem"></i><br>${st.remove ? '儲存後移除' : '尚無照片'}</span>`;
+  document.getElementById(p+'RemoveBtn').style.display = src ? '' : 'none';
+  document.getElementById(p+'UndoBtn').style.display = (st.pending || st.remove) ? '' : 'none';
+  const state = document.getElementById(p+'State');
+  state.textContent = st.pending ? '新照片，儲存時上傳' : st.remove ? '儲存後會移除' : '';
+  amPhotoNameRefresh();
+}
+function amPhotoNameRefresh(){
+  const base = assetPhotoBaseName(amFormRecord());
+  Object.keys(AM_KINDS).forEach(k => { const el = document.getElementById(AM_KINDS[k].prefix+'Name'); if (el) el.textContent = base + AM_KINDS[k].suffix + '.jpg'; });
+}
+function amPhotoZoom(kind){ const st = amPh[kind]; if (!st.pending && st.orig) window.open(driveViewUrl(st.orig), '_blank'); }
+function amPhotoRemove(kind){ const st = amPh[kind]; if (st.pending) st.pending = null; else st.remove = true; document.getElementById(AM_KINDS[kind].prefix+'Input').value=''; amPhotoRender(kind); }
+function amPhotoUndo(kind){ const st = amPh[kind]; st.pending = null; st.remove = false; document.getElementById(AM_KINDS[kind].prefix+'Input').value=''; amPhotoRender(kind); }
+// 選照片後先在瀏覽器縮小（長邊 1600px、JPEG 品質 0.85），上傳快、雲端也不佔空間
+async function amPhotoPick(input, kind){
+  const file = input.files && input.files[0]; if (!file) return;
+  try { amPh[kind].pending = await photoResizeFile(file); amPh[kind].remove = false; amPhotoRender(kind); }
+  catch(err) { toast('無法讀取照片', err.message, 'danger'); input.value = ''; }
+}
+// 修改名稱、保管品號等欄位時，即時更新檔名預覽
+['input','change'].forEach(ev => document.addEventListener(ev, e => {
+  if (e.target && !/^am(Photo|Tag)Input$/.test(e.target.id) && e.target.closest && e.target.closest('#assetModal')) amPhotoNameRefresh();
+}));
+
+async function confirmRetire() {
+  const rowIndex = parseInt(document.getElementById('assetRowIndex').value);
+  const name = document.getElementById('am設備名稱').value || document.getElementById('am保管品號').value || document.getElementById('am規格').value;
+  if (!confirm(`確定要將「${name}」標記為報廢並移到已報廢清單？
+此動作無法復原。`)) return;
+  bootstrap.Modal.getInstance(document.getElementById('assetModal')).hide();
+  showLoad('處理中...');
+  try {
+    let data = await assetPost({ action:'retireAssetV2', token:getToken(), rowIndex });
+    if (!data.success && data.message === '未知的action') data = await assetPost({ action:'retireAsset', token:getToken(), rowIndex });
+    if (data.success) { toast('已報廢', data.message||'已移至已報廢清單', 'success'); await loadAssets(); }
+    else toast('操作失敗', data.message, 'danger');
+  } catch(e) { toast('連線失敗', e.message, 'danger'); }
+  finally { hideLoad(); }
+}
+
+// ── 報廢清單 ──────────────────────────────────────────────
+let retiredLoaded = false, showingRetired = false, retiredItems = [];
+
+function openRetiredModal(rowIndex) {
+  const r = retiredItems.find(a => a._rowIndex === rowIndex);
+  if (!r) return;
+  document.getElementById('retiredRowIndex').value = rowIndex;
+  const fields = {
+    'rm設備名稱': r['設備名稱']||'', 'rm保管品號': r['保管品號']||'',
+    'rm材料編號': r['材料編號']||'', 'rm品名': r['品名']||'',
+    'rm規格': r['規格']||'', 'rm單位': r['單位']||'',
+    'rm數量': r['數量']||1, 'rm取得日期': r['取得日期']||'',
+    'rm廠牌型號': r['廠牌/型號']||'', 'rm備註': r['備註']||'',
+    'rm報廢時間': r['報廢時間']||'', 'rm分類': r['分類']||'',
+    'rm財產標籤': r['財產標籤']||'', 'rm註記': r['註記']||''
+  };
+  Object.entries(fields).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val;
+  });
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('retiredModal')).show();
+}
+
+async function saveRetired() {
+  const rowIndex = parseInt(document.getElementById('retiredRowIndex').value);
+  const payload = {
+    action: 'updateRetired', token: getToken(), rowIndex,
+    data: {
+      '設備名稱': document.getElementById('rm設備名稱').value.trim(),
+      '保管品號': document.getElementById('rm保管品號').value.trim(),
+      '材料編號': document.getElementById('rm材料編號').value.trim(),
+      '品名':     document.getElementById('rm品名').value.trim(),
+      '規格':     document.getElementById('rm規格').value.trim(),
+      '單位':     document.getElementById('rm單位').value.trim(),
+      '數量':     document.getElementById('rm數量').value || 1,
+      '取得日期': document.getElementById('rm取得日期').value.trim(),
+      '廠牌/型號':document.getElementById('rm廠牌型號').value.trim(),
+      '備註':     document.getElementById('rm備註').value.trim(),
+      '報廢時間': document.getElementById('rm報廢時間').value.trim(),
+      '分類':     document.getElementById('rm分類').value,
+      '財產標籤': document.getElementById('rm財產標籤').value,
+      '註記':     document.getElementById('rm註記').value.trim(),
+    }
+  };
+  showLoad('儲存中...');
+  bootstrap.Modal.getInstance(document.getElementById('retiredModal')).hide();
+  try {
+    const r = await fetch(API, { method:'POST', body: JSON.stringify(payload) });
+    const data = await r.json();
+    if (data.success) { toast('儲存成功', data.message||'已更新', 'success'); retiredLoaded=false; loadRetired(); }
+    else toast('儲存失敗', data.message, 'danger');
+  } catch(e) { toast('連線失敗', e.message, 'danger'); }
+  finally { hideLoad(); }
+}
+
+
+function toggleRetiredView() {
+  showingRetired = !showingRetired;
+  const rv  = document.getElementById('retiredView');
+  const lv  = document.getElementById('assetListView');
+  const btn = document.getElementById('showRetiredBtn');
+  if (showingRetired) {
+    rv.style.display  = '';
+    lv.style.display  = 'none';
+    btn.className     = 'btn btn-sm btn-danger';
+    btn.innerHTML     = '<i class="bi bi-arrow-left me-1"></i>返回財產清單';
+    if (!retiredLoaded) loadRetired();
+  } else {
+    rv.style.display  = 'none';
+    lv.style.display  = '';
+    btn.className     = 'btn btn-sm btn-outline-danger';
+    btn.innerHTML     = '<i class="bi bi-archive me-1"></i>查看報廢項目';
+  }
+}
+
+async function loadRetired() {
+  if (!getToken()) return;
+  showLoad('載入報廢清單...');
+  try {
+    const r = await fetch(API + '?action=queryRetired&token=' + encodeURIComponent(getToken()));
+    const data = await r.json();
+    if (!data.success) { toast('載入失敗', data.message, 'danger'); return; }
+    retiredLoaded = true;
+    const items = data.data || [];
+    retiredItems = items;
+    document.getElementById('retiredCount').textContent = '共 ' + items.length + ' 筆';
+    // 已報廢統計由 GAS queryRetiredCount 負責，這裡不覆蓋
+
+    const catBadgeR = v => {
+      if (!v) return '';
+      const map = {'攝影器材類':'#fde8e7:#9f3a39','音訊設備類':'#ede9fe:#5b21b6','電腦設備類':'#dbeafe:#1e40af','事務機器類':'#d1fae5:#065f46','辦公設備類':'#fef3c7:#92400e','其他':'#f1f5f9:#475569','教室設備':'#e2e8f0:#334155'};
+      const c = map[v]||'#f1f5f9:#64748b'; const [bg,col]=c.split(':');
+      return `<span style="background:${bg};color:${col};padding:1px 7px;border-radius:10px;font-size:.72rem;font-weight:600">${v}</span>`;
+    };
+    const tagB = v => v==='有'
+      ? '<span style="background:#d1fae5;color:#065f46;padding:1px 7px;border-radius:10px;font-size:.72rem">有</span>'
+      : v==='無' ? '<span style="background:#fee2e2;color:#991b1b;padding:1px 7px;border-radius:10px;font-size:.72rem">無</span>' : '—';
+    const noteB = v => {
+      if (!v) return '';
+      const map = {'整組':'#dbeafe:#1d4ed8','主體':'#d1fae5:#065f46'};
+      const isAcc = /^配件/.test(v);
+      const c = map[v]||(isAcc?'#fef9c3:#854d0e':'#f1f5f9:#64748b');
+      const [bg,col]=c.split(':');
+      return `<span style="background:${bg};color:${col};padding:1px 7px;border-radius:10px;font-size:.7rem;font-weight:600">${v}</span>`;
+    };
+
+    // 排序：同財產清冊（分類→主體群組→主體在前配件在後）
+    const catOrder = ['攝影器材類','音訊設備類','電腦設備類','事務機器類','辦公設備類','其他','zzz_教室設備'];
+    const getRKey = r => {
+      const p = String(r['父項']||'').trim();
+      if (p === '教室設備') return ['zzz_教室設備','zzz_教室設備',0];
+      if (p) {
+        const parent = items.find(a => String(a['設備名稱']||'').trim() === p);
+        const pCat = parent ? String(parent['分類']||'').trim() : '';
+        const ci = catOrder.indexOf(pCat); 
+        return [ci>=0?ci:catOrder.length-2, p, 1];
+      }
+      const n = String(r['設備名稱']||r['品名']||'').trim();
+      const cat = String(r['分類']||'').trim();
+      const ci = catOrder.indexOf(cat);
+      return [ci>=0?ci:catOrder.length-2, n, 0];
+    };
+    const sortedR = [...items].sort((a,b) => {
+      const ka=getRKey(a), kb=getRKey(b);
+      if (ka[0]!==kb[0]) return ka[0]-kb[0];
+      if (ka[1]!==kb[1]) return ka[1].localeCompare(kb[1],'zh-TW');
+      return ka[2]-kb[2];
+    });
+    const sortedRFinal = attachChildrenAfterParent(sortedR);
+
+    document.getElementById('retiredBody').innerHTML = sortedRFinal.length
+      ? sortedRFinal.map(r => {
+          const isRm = r['父項']==='教室設備';
+          const isPt = r['父項'] && r['父項']!=='教室設備';
+          const bg   = isPt ? 'background:#fffceb' : isRm ? 'background:#f8fafc' : 'background:#fff8f8';
+          const partSelf = [r['設備名稱'], r['品名'], r['規格']].map(v=>String(v||'').trim()).find(v=>v) || '';
+          const displayName = isPt
+            ? `<span style="font-size:.78rem;color:#92400e"><i class="bi bi-arrow-return-right me-1"></i>${r['父項']||''}</span>${partSelf ? `<span style="color:#57534e;margin-left:6px">${partSelf}</span>` : ''}`
+            : (r['設備名稱']||r['規格']||'—');
+          return `<tr style="${bg}">
+            <td style="text-align:center;white-space:nowrap"><span style="color:#dc2626;font-weight:600">${r['保管品號']||'—'}</span></td>
+            <td>${displayName}</td>
+            <td style="text-align:center">${catBadgeR(String(r['分類']||'').trim())}</td>
+            <td style="color:#64748b">${r['材料編號']||'—'}</td>
+            <td style="text-align:center">${r['單位']||''}</td>
+            <td style="text-align:center">${r['數量']||1}</td>
+            <td style="text-align:center;white-space:nowrap">${fmtROC(r['取得日期'])}</td>
+            <td style="text-align:center;white-space:nowrap;color:#dc2626;font-weight:600">${r['報廢時間']||'—'}</td>
+            <td style="text-align:center">${tagB(r['財產標籤'])}</td>
+            <td style="text-align:center">${noteB(r['註記'])}</td>
+            <td style="text-align:center"><button class="btn btn-xs btn-outline-secondary" style="font-size:.7rem;padding:1px 6px" onclick="openRetiredModal(${r._rowIndex})"><i class="bi bi-pencil"></i></button></td>
+          </tr>`;
+        }).join('')
+      : '<tr><td colspan="11" class="text-center text-muted py-4">目前沒有報廢項目</td></tr>';
+  } catch(e) { toast('連線失敗', e.message, 'danger'); }
+  finally { hideLoad(); }
+}
+
+
+// 更新日誌
+let changelogData = [];
+
+async function loadChangelog(){
+  if(!getToken())return;
+  showLoad('讀取更新日誌...');
+  try{
+    const r=await fetch(API+'?action=queryChangelog&token='+encodeURIComponent(getToken()));
+    const data=await r.json();
+    hideLoad();
+    if(!data.success){toast('載入失敗',data.message,'danger');return;}
+    changelogData = data.data||[];
+    renderChangelog();
+  }catch(err){hideLoad();toast('連線失敗',err.message,'danger');}
+  finally{hideLoad();}
+}
+
+function escapeHtml(s){
+  return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function formatChangelogContent(text){
+  if(!text) return '';
+  const lines = String(text).split('\n').map(l=>l.trim()).filter(l=>l!=='');
+  if(!lines.length) return '';
+  let html='';
+  let i=0;
+  const isListLine = l => /^(\d+\.|-|•)\s*/.test(l);
+  if(!isListLine(lines[0])){
+    html += `<div style="font-weight:700;color:#1e293b;margin-bottom:6px;font-size:.9rem">${escapeHtml(lines[0])}</div>`;
+    i=1;
+  }
+  const items=[];
+  for(;i<lines.length;i++){
+    if(isListLine(lines[i])) items.push(escapeHtml(lines[i].replace(/^(\d+\.|-|•)\s*/,'')));
+    else items.push(escapeHtml(lines[i]));
+  }
+  if(items.length){
+    html += '<ul style="margin:0;padding-left:20px">' + items.map(it=>`<li style="margin-bottom:2px">${it}</li>`).join('') + '</ul>';
+  }
+  return html;
+}
+
+function renderChangelog(){
+  const verEl=document.getElementById('sidebarVersion');
+  if(verEl) verEl.textContent = changelogData.length ? ('版本 '+changelogData[0].版次) : '版本 v—';
+
+  const wrap=document.getElementById('changelogList');
+  if(!changelogData.length){
+    wrap.innerHTML='<div class="text-center text-muted py-5" style="font-size:.85rem">尚無更新紀錄，點右上角「新增紀錄」開始記錄第一筆更新內容</div>';
+    return;
+  }
+  // 依版次分組（維持原本新到舊的排序順序）
+  const groups=[];
+  const groupIndex={};
+  changelogData.forEach(item=>{
+    const key=item.版次||'（未填版次）';
+    if(groupIndex[key]===undefined){
+      groupIndex[key]=groups.length;
+      groups.push({version:key, items:[]});
+    }
+    groups[groupIndex[key]].items.push(item);
+  });
+  wrap.innerHTML = groups.map(g=>{
+    const rows = g.items.map(item=>{
+      const isNew = item.類型==='新增項目';
+      const badge = isNew
+        ? '<span class="badge" style="background:#dcfce7;color:#166534;font-weight:600">新增項目</span>'
+        : '<span class="badge" style="background:#fef3c7;color:#92400e;font-weight:600">維護項目</span>';
+      return `<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 20px;border-top:1px solid #f1f5f9">
+        <div style="min-width:78px">${badge}</div>
+        <div style="flex:1;font-size:.85rem;color:#334155">${formatChangelogContent(item.內容)}</div>
+        <div style="min-width:90px;text-align:right;font-size:.78rem;color:#94a3b8">${item.日期||''}</div>
+        <button class="btn btn-sm" style="padding:2px 8px;color:#94a3b8" onclick='openChangelogModal(${JSON.stringify(item).replace(/'/g,"&apos;")})' title="編輯"><i class="bi bi-pencil"></i></button>
+        <button class="btn btn-sm" style="padding:2px 8px;color:#cbd5e1" onclick="deleteChangelogRow(${item._rowIndex})" title="刪除"><i class="bi bi-trash"></i></button>
+      </div>`;
+    }).join('');
+    return `<div class="card" style="margin-bottom:14px">
+      <div class="card-hd"><span><i class="bi bi-tag-fill me-2" style="color:var(--ac)"></i>${g.version}</span></div>
+      ${rows}
+    </div>`;
+  }).join('');
+}
+
+let _clgEditRowIndex = null;
+
+function openChangelogModal(item){
+  if(item && item._rowIndex){
+    _clgEditRowIndex = item._rowIndex;
+    document.getElementById('clgModalTitle').textContent = '編輯更新日誌';
+    document.getElementById('clgSubmitBtn').textContent = '儲存';
+    document.getElementById('clgVersion').value = item.版次 || '';
+    document.getElementById('clgType').value = item.類型 || '新增項目';
+    document.getElementById('clgContent').value = item.內容 || '';
+    document.getElementById('clgDate').value = item.日期 || twToday();
+  } else {
+    _clgEditRowIndex = null;
+    document.getElementById('clgModalTitle').textContent = '新增更新日誌';
+    document.getElementById('clgSubmitBtn').textContent = '新增';
+    document.getElementById('clgVersion').value='';
+    document.getElementById('clgType').value='新增項目';
+    document.getElementById('clgContent').value='';
+    document.getElementById('clgDate').value=twToday();
+  }
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('changelogModal')).show();
+}
+
+async function submitChangelog(){
+  const version=document.getElementById('clgVersion').value.trim();
+  const type=document.getElementById('clgType').value;
+  const date=document.getElementById('clgDate').value;
+  const content=document.getElementById('clgContent').value.trim();
+  if(!version){toast('請填寫版次','','danger');return;}
+  if(!content){toast('請填寫內容','','danger');return;}
+  const isEdit = !!_clgEditRowIndex;
+  showLoad(isEdit?'儲存中...':'新增中...');
+  try{
+    const body = isEdit
+      ? {action:'updateChangelog', token:getToken(), rowIndex:_clgEditRowIndex, data:{'版次':version,'類型':type,'內容':content,'日期':date}}
+      : {action:'insertChangelog', token:getToken(), data:{'版次':version,'類型':type,'內容':content,'日期':date}};
+    const r=await fetch(API,{method:'POST',body:JSON.stringify(body)});
+    const data=await r.json();
+    hideLoad();
+    if(!data.success){toast(isEdit?'儲存失敗':'新增失敗',data.message,'danger');return;}
+    bootstrap.Modal.getInstance(document.getElementById('changelogModal')).hide();
+    toast(isEdit?'儲存成功':'新增成功','','success');
+    loadChangelog();
+  }catch(err){hideLoad();toast('連線失敗',err.message,'danger');}
+  finally{hideLoad();}
+}
+
+async function deleteChangelogRow(rowIndex){
+  if(!confirm('確定要刪除這筆更新紀錄嗎？'))return;
+  showLoad('刪除中...');
+  try{
+    const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'deleteChangelog', token:getToken(), rowIndex})});
+    const data=await r.json();
+    hideLoad();
+    if(!data.success){toast('刪除失敗',data.message,'danger');return;}
+    toast('已刪除','','success');
+    loadChangelog();
+  }catch(err){hideLoad();toast('連線失敗',err.message,'danger');}
+  finally{hideLoad();}
+}
+</script>
+</body>
+</html>
