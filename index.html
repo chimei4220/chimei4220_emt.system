@@ -71,6 +71,22 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);display:fl
 .sec-divider{border:0;border-top:1px solid #d5dce8;opacity:1;margin:20px 0;}
 .tc-orig{font-size:.72rem;color:#b45309;margin-top:3px;min-height:0;}
 .tc-basic.tc-changed{border-color:#f59e0b;background:#fffbeb;}
+/* 奇美醫訊管理 */
+.nl-stat{font-size:.72rem;color:#94a3b8;margin-bottom:4px;}
+.nl-num{font-size:1.4rem;font-weight:700;color:#1e293b;line-height:1.2;}
+.nl-num small{font-size:.75rem;font-weight:500;color:#94a3b8;margin-left:3px;}
+.nl-prog{height:10px;border-radius:6px;background:#f1f5f9;overflow:hidden;}
+.nl-prog>div{height:100%;background:var(--ac);border-radius:6px;transition:width .3s;}
+.nl-loc{border:1px solid #eef0f4;border-radius:10px;padding:10px 12px;background:#fcfcfd;}
+.nl-loc label{font-size:.8rem;font-weight:600;color:#475569;margin-bottom:4px;display:block;}
+.nl-loc .hint{font-size:.72rem;color:#94a3b8;margin-top:3px;min-height:1em;}
+.nl-bar{height:8px;border-radius:5px;background:#f1f5f9;overflow:hidden;min-width:80px;}
+.nl-bar>div{height:100%;background:#d99a99;}
+#panel-newsletter .card{overflow:hidden;}  /* 讓表格底部也跟著卡片圓角 */
+#nlHistBody tr{cursor:pointer;}
+.nl-note{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#ef4444;color:#fff;font-size:.66rem;font-weight:700;cursor:pointer;}
+.nl-edit{padding:1px 7px!important;font-size:.72rem!important;line-height:1.4;border-radius:5px;}
+#nlHistBody tr.sel td{background:var(--ac-lt)!important;}
 /* Main */
 .main{flex:1;overflow-y:auto;padding:22px 26px;}
 .panel{display:none;}.panel.active{display:block;}
@@ -298,6 +314,12 @@ a{color:var(--ac-dk);}
   <button class="mnav-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileNav" aria-label="開啟選單"><i class="bi bi-list"></i></button>
   <nav class="topnav" aria-label="主選單">
     <a class="sb-link active" data-panel="assets" onclick="showPanel('assets',this)"><i class="bi bi-archive"></i>財產總覽</a>
+    <div class="nav-group dropdown">
+      <a class="nav-dd" data-bs-toggle="dropdown" role="button" aria-expanded="false"><i class="bi bi-briefcase"></i>行政管理<i class="bi bi-chevron-down dd-caret"></i></a>
+      <ul class="dropdown-menu">
+        <li><a class="sb-link" data-panel="newsletter" onclick="showPanel('newsletter',this)"><i class="bi bi-journal-text"></i>奇美醫訊管理</a></li>
+      </ul>
+    </div>
     <a class="sb-link" data-panel="changelog" onclick="showPanel('changelog',this)"><i class="bi bi-clock-history"></i>更新日誌</a>
   </nav>
   <div class="tb-right">
@@ -316,6 +338,8 @@ a{color:var(--ac-dk);}
   <div class="offcanvas-body">
     <div class="mnav-sec">主要功能</div>
     <a class="sb-link active" data-panel="assets" onclick="showPanel('assets',this)"><i class="bi bi-archive"></i>財產總覽</a>
+    <div class="mnav-sec">行政管理</div>
+    <a class="sb-link" data-panel="newsletter" onclick="showPanel('newsletter',this)"><i class="bi bi-journal-text"></i>奇美醫訊管理</a>
     <div class="mnav-sec">系統</div>
     <a class="sb-link" data-panel="changelog" onclick="showPanel('changelog',this)"><i class="bi bi-clock-history"></i>更新日誌</a>
   </div>
@@ -468,6 +492,200 @@ a{color:var(--ac-dk);}
             <tr><td colspan="11" class="text-center text-muted py-5" style="font-size:.85rem">載入中...</td></tr>
           </tbody>
         </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- 奇美醫訊管理 -->
+<div id="panel-newsletter" class="panel">
+  <div class="pg-head flex-wrap gap-2">
+    <div class="pg-title">
+      <div class="pg-icon"><i class="bi bi-journal-text"></i></div>
+      <div><h5>奇美醫訊管理</h5><div class="pg-sub">柳營 奇美醫訊定期補貨登記（每三個月一期，12／3／6／9 月進貨）</div></div>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <button class="btn btn-outline-secondary btn-sm" onclick="loadNewsletter()"><i class="bi bi-arrow-clockwise me-1"></i>重新整理</button>
+      <button class="btn btn-outline-success btn-sm" onclick="exportNewsletterExcel()"><i class="bi bi-file-earmark-excel me-1"></i>匯出 Excel</button>
+      <button class="btn btn-outline-secondary btn-sm" onclick="openNlLocModal()"><i class="bi bi-geo-alt me-1"></i>補貨地點</button>
+      <button class="btn btn-primary btn-sm" onclick="openNlIssueModal()"><i class="bi bi-plus-lg me-1"></i>開新的一期</button>
+    </div>
+  </div>
+
+  <!-- 還沒有任何一期 -->
+  <div id="nlEmpty" class="card" style="display:none">
+    <div class="card-bd text-center py-5">
+      <i class="bi bi-journal-plus" style="font-size:2rem;color:var(--ac)"></i>
+      <div class="mt-2 mb-3" style="color:#64748b;font-size:.9rem">還沒有任何一期的資料，先建立第一期吧</div>
+      <button class="btn btn-primary btn-sm" onclick="openNlIssueModal()"><i class="bi bi-plus-lg me-1"></i>建立第一期</button>
+    </div>
+  </div>
+
+  <div id="nlMain" style="display:none">
+    <!-- 最上方：登記補貨（一條） -->
+    <div class="card mb-3">
+      <div class="card-bd" style="padding:12px 16px;font-size:.85rem">
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <span class="fw-semibold me-1" style="color:#334155;white-space:nowrap"><i class="bi bi-box-arrow-up-right me-1" style="color:var(--ac)"></i>登記補貨 <span id="nlFormIssue" style="font-weight:500;color:#94a3b8;font-size:.78rem"></span></span>
+          <div class="input-group input-group-sm" style="width:auto"><span class="input-group-text">日期</span><input type="date" class="form-control" id="nlFDate" style="width:140px"></div>
+          <div class="input-group input-group-sm" style="width:auto"><span class="input-group-text">經手人</span><input type="text" class="form-control" id="nlFBy" list="nlByList" style="width:100px"><datalist id="nlByList"></datalist></div>
+          <div class="d-flex flex-wrap gap-2" id="nlFLocs"></div>
+          <div class="input-group input-group-sm" style="width:auto;flex:1 1 140px"><span class="input-group-text">備註</span><input type="text" class="form-control" id="nlFNote" placeholder="選填"></div>
+          <span id="nlFTotal" style="color:#64748b;white-space:nowrap">合計 0 本</span>
+          <button class="btn btn-primary btn-sm" onclick="submitNlRecords()"><i class="bi bi-check-lg me-1"></i>登記</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3 align-items-start">
+    <!-- 左：本期狀態＋各期總覽 -->
+    <div class="col-12 col-xl-6">
+    <div class="card mb-3">
+      <div class="card-hd">
+        <span><i class="bi bi-bookmark-star me-2" style="color:var(--ac)"></i><span id="nlCurTitle">—</span></span>
+        <div class="d-flex align-items-center gap-2">
+          <span id="nlCurPeriod" style="font-size:.78rem;color:#94a3b8"></span>
+          <button class="btn btn-sm" style="padding:2px 8px;color:#94a3b8" onclick="openNlIssueModal(nlSel)" title="編輯這一期"><i class="bi bi-pencil"></i></button>
+        </div>
+      </div>
+      <div class="card-bd">
+        <div class="row g-3 mb-4">
+          <div class="col-6 col-md-3"><div class="nl-stat">進貨數量</div><div class="nl-num" id="nlStIn">—</div></div>
+          <div class="col-6 col-md-3"><div class="nl-stat">已補出</div><div class="nl-num" id="nlStOut" style="color:var(--ac)">—</div></div>
+          <div class="col-6 col-md-3"><div class="nl-stat">剩餘</div><div class="nl-num" id="nlStLeft">—</div></div>
+          <div class="col-6 col-md-3"><div class="nl-stat">下次進貨</div><div class="nl-num" id="nlStNext" style="font-size:1.1rem">—</div></div>
+        </div>
+        <div class="d-flex justify-content-between mb-1" style="font-size:.75rem;color:#94a3b8"><span>補出進度</span><span id="nlProgTxt"></span></div>
+        <div class="nl-prog"><div id="nlProg" style="width:0%"></div></div>
+        <div id="nlAlert" class="mt-3" style="display:none;font-size:.82rem"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hd">
+        <span><i class="bi bi-bar-chart me-2" style="color:var(--ac)"></i>各期總覽</span>
+        <span style="font-size:.75rem;color:#94a3b8">點一列可以切換到那一期</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover table-bordered mb-0" style="font-size:.84rem">
+          <thead><tr>
+            <th style="width:80px;text-align:center">期別</th>
+            <th style="width:110px;text-align:center">進貨月份</th>
+            <th style="width:70px;text-align:right">進貨</th>
+            <th style="width:70px;text-align:right">已補出</th>
+            <th style="width:70px;text-align:right">剩餘</th>
+            <th>補出比例</th>
+            <th style="width:60px;text-align:center">次數</th>
+          </tr></thead>
+          <tbody id="nlHistBody"></tbody>
+        </table>
+      </div>
+    </div>
+    </div>
+
+    <!-- 右：補貨明細 -->
+    <div class="col-12 col-xl-6">
+    <div class="card">
+      <div class="card-hd">
+        <span><i class="bi bi-list-ul me-2" style="color:var(--ac)"></i>補貨明細</span>
+        <select class="form-select form-select-sm" id="nlIssueSel" style="width:auto;font-size:.8rem" onchange="selectNlIssue(this.value)"></select>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover table-bordered mb-0" style="font-size:.84rem">
+          <thead><tr>
+            <th style="width:104px;text-align:center">日期</th>
+            <th>地點</th>
+            <th style="width:72px;text-align:right">本數</th>
+            <th style="width:60px;text-align:right">梱</th>
+            <th style="width:90px">經手人</th>
+            <th style="width:40px;text-align:center">備</th>
+            <th style="width:52px;text-align:center">操作</th>
+          </tr></thead>
+          <tbody id="nlRecBody"></tbody>
+          <tfoot id="nlRecFoot"></tfoot>
+        </table>
+      </div>
+    </div>
+    </div>
+    </div>
+  </div>
+</div>
+
+<!-- 醫訊：期別 Modal -->
+<div class="modal fade" id="nlIssueModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title" id="nlIssueTitle">開新的一期</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="font-size:.85rem">
+        <div class="row g-3">
+          <div class="col-6"><label class="form-label fw-semibold">期別</label>
+            <div class="input-group input-group-sm"><input type="number" class="form-control" id="nlIssNo" min="1"><span class="input-group-text">期</span></div></div>
+          <div class="col-6"><label class="form-label fw-semibold">進貨月份</label><input type="month" class="form-control form-control-sm" id="nlIssMonth"></div>
+          <div class="col-6"><label class="form-label fw-semibold">進貨本數</label>
+            <div class="input-group input-group-sm"><input type="number" class="form-control" id="nlIssQty" min="0" oninput="nlIssHint()"><span class="input-group-text">本</span></div></div>
+          <div class="col-6"><label class="form-label fw-semibold">每梱本數</label>
+            <div class="input-group input-group-sm"><input type="number" class="form-control" id="nlIssPer" min="1" oninput="nlIssHint()"><span class="input-group-text">本</span></div></div>
+          <div class="col-12" id="nlIssHint" style="font-size:.78rem;color:#94a3b8;margin-top:4px"></div>
+          <div class="col-12"><label class="form-label fw-semibold">備註</label><input type="text" class="form-control form-control-sm" id="nlIssNote" placeholder="選填"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-danger btn-sm me-auto" id="nlIssDelBtn" onclick="deleteNlIssueNow()"><i class="bi bi-trash me-1"></i>刪除這一期</button>
+        <button class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">取消</button>
+        <button class="btn btn-primary btn-sm" onclick="saveNlIssueNow()">儲存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 醫訊：編輯補貨紀錄 Modal -->
+<div class="modal fade" id="nlRecModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title">編輯補貨紀錄</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="font-size:.85rem">
+        <div class="row g-3">
+          <div class="col-6"><label class="form-label fw-semibold">日期</label><input type="date" class="form-control form-control-sm" id="nlRecDate"></div>
+          <div class="col-6"><label class="form-label fw-semibold">地點</label><select class="form-select form-select-sm" id="nlRecLoc"></select></div>
+          <div class="col-6"><label class="form-label fw-semibold">本數</label>
+            <div class="input-group input-group-sm"><input type="number" class="form-control" id="nlRecQty" min="1"><span class="input-group-text">本</span></div></div>
+          <div class="col-6"><label class="form-label fw-semibold">經手人</label><input type="text" class="form-control form-control-sm" id="nlRecBy" list="nlByList"></div>
+          <div class="col-12"><label class="form-label fw-semibold">備註</label><input type="text" class="form-control form-control-sm" id="nlRecNote"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-danger btn-sm me-auto" onclick="deleteNlRecordNow()"><i class="bi bi-trash me-1"></i>刪除</button>
+        <button class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">取消</button>
+        <button class="btn btn-primary btn-sm" onclick="saveNlRecordNow()">儲存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 醫訊：補貨地點 Modal -->
+<div class="modal fade" id="nlLocModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title">補貨地點</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="font-size:.85rem">
+        <div id="nlLocList"></div>
+        <div class="input-group input-group-sm mt-3">
+          <input type="text" class="form-control" id="nlLocNew" placeholder="新增地點，例如：健檢中心" onkeydown="if(event.key==='Enter'){event.preventDefault();addNlLoc();}">
+          <button class="btn btn-outline-secondary" onclick="addNlLoc()"><i class="bi bi-plus-lg"></i> 新增</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">取消</button>
+        <button class="btn btn-primary btn-sm" onclick="saveNlLocsNow()">儲存</button>
       </div>
     </div>
   </div>
@@ -818,12 +1036,14 @@ function showPanel(name,el){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel-'+name).classList.add('active');
   document.querySelectorAll('.sb-link').forEach(l=>l.classList.toggle('active',l.dataset.panel===name));
+  document.querySelectorAll('.topnav .nav-group').forEach(g=>g.classList.toggle('active',!!g.querySelector('.sb-link[data-panel="'+name+'"]')));
   const curLink=document.querySelector('#mobileNav .sb-link[data-panel="'+name+'"]');
   const cur=document.getElementById('mnavCur'); if(cur&&curLink) cur.textContent=curLink.textContent.trim();
   const mn=document.getElementById('mobileNav'); if(mn&&mn.classList.contains('show')) bootstrap.Offcanvas.getInstance(mn)?.hide();
   const mu=document.getElementById('mnavUser'),cu=document.getElementById('currentUser'); if(mu&&cu) mu.textContent=cu.textContent;
   if(name==='assets'&&!allAssets.length) loadAssets();
   if(name==='changelog') loadChangelog();
+  if(name==='newsletter') loadNewsletter();
 }
 
 // Loading / Toast
@@ -1930,6 +2150,328 @@ async function deleteChangelogRow(rowIndex){
     loadChangelog();
   }catch(err){hideLoad();toast('連線失敗',err.message,'danger');}
   finally{hideLoad();}
+}
+
+// ══════════════════════════════════════════════
+//  行政管理 ─ 奇美醫訊管理
+// ══════════════════════════════════════════════
+let nlIssues = [], nlRecords = [], nlLocs = [], nlSel = null, nlLoaded = false;
+let _nlIssEditId = null, _nlRecEditId = null, _nlLocDraft = [];
+
+function nlBundle(n, per){ const v = n / (per || 50); return (Math.round(v * 100) / 100).toLocaleString(); }
+function nlAddMonths(ym, k){ const [y, m] = ym.split('-').map(Number); const t = y * 12 + (m - 1) + k; return Math.floor(t / 12) + '-' + String(t % 12 + 1).padStart(2, '0'); }
+function nlYM(ym){ if(!ym) return '—'; const [y, m] = ym.split('-'); return y + ' 年 ' + Number(m) + ' 月'; }
+function nlPeriod(ym){ if(!ym) return ''; return nlYM(ym) + ' ～ ' + nlYM(nlAddMonths(ym, 2)); }
+// 下一個 12／3／6／9 月（找不到上一期時用）
+function nlNextQuarterMonth(){
+  const [y, m] = twToday().slice(0, 7).split('-').map(Number);
+  const q = [3, 6, 9, 12].find(x => x >= m) || 3;
+  return (q < m ? y + 1 : y) + '-' + String(q).padStart(2, '0');
+}
+function nlStats(iss){
+  const recs = nlRecords.filter(r => r.期別 === iss.期別);
+  const out = recs.reduce((s, r) => s + r.本數, 0);
+  return { recs, out, left: iss.進貨本數 - out, times: new Set(recs.map(r => r.日期)).size };
+}
+function nlCurIssue(){ return nlIssues.find(i => i.期別 === nlSel) || nlIssues[0] || null; }
+
+async function loadNewsletter(){
+  if(!getToken()) return;
+  showLoad('讀取奇美醫訊...');
+  try{
+    const data = await fetchJson(API + '?action=queryNewsletter&token=' + encodeURIComponent(getToken()));
+    if(!data.success){ toast('載入失敗', data.message, 'danger'); return; }
+    nlIssues = data.issues || []; nlRecords = data.records || []; nlLocs = data.locations || [];
+    if(!nlIssues.some(i => i.期別 === nlSel)) nlSel = nlIssues.length ? nlIssues[0].期別 : null;
+    if(!nlLoaded){
+      document.getElementById('nlFDate').value = twToday();
+      document.getElementById('nlFBy').value = sessionStorage.getItem('jczLoginName') || '';
+      nlLoaded = true;
+    }
+    renderNewsletter();
+  }catch(err){ toast('連線失敗', err.message, 'danger'); }
+  finally{ hideLoad(); }
+}
+
+function selectNlIssue(no){ nlSel = Number(no); renderNewsletter(); }
+
+function renderNewsletter(){
+  const has = nlIssues.length > 0;
+  document.getElementById('nlEmpty').style.display = has ? 'none' : '';
+  document.getElementById('nlMain').style.display = has ? '' : 'none';
+  if(!has) return;
+  const iss = nlCurIssue(); const st = nlStats(iss); const per = iss.每梱本數;
+  const latest = nlIssues[0]; const isLatest = iss.期別 === latest.期別;
+
+  // 本期狀態
+  document.getElementById('nlCurTitle').textContent = iss.期別 + ' 期' + (isLatest ? '（目前這一期）' : '');
+  document.getElementById('nlCurPeriod').textContent = nlPeriod(iss.進貨月份);
+  document.getElementById('nlStIn').innerHTML = iss.進貨本數.toLocaleString() + '<small>本・' + nlBundle(iss.進貨本數, per) + ' 梱</small>';
+  document.getElementById('nlStOut').innerHTML = st.out.toLocaleString() + '<small>本・' + nlBundle(st.out, per) + ' 梱</small>';
+  const leftEl = document.getElementById('nlStLeft');
+  leftEl.innerHTML = st.left.toLocaleString() + '<small>本・' + nlBundle(st.left, per) + ' 梱</small>';
+  leftEl.style.color = st.left <= 0 ? '#dc2626' : (st.left <= per * 2 ? '#d97706' : '#16a34a');
+  const pct = iss.進貨本數 > 0 ? Math.min(100, Math.round(st.out / iss.進貨本數 * 100)) : 0;
+  document.getElementById('nlProg').style.width = pct + '%';
+  document.getElementById('nlProgTxt').textContent = pct + '%';
+
+  const nextYM = nlAddMonths(latest.進貨月份, 3);
+  const today = twToday();
+  const days = Math.round((new Date(nextYM + '-01T00:00:00') - new Date(today + 'T00:00:00')) / 86400000);
+  const after = nlIssues.filter(i => i.期別 > iss.期別).pop();
+  document.getElementById('nlStNext').innerHTML = isLatest
+    ? nlYM(nextYM) + '<div style="font-size:.75rem;font-weight:500;color:#94a3b8">' + (days > 0 ? '還有 ' + days + ' 天' : '已經到了，記得開新的一期') + '</div>'
+    : '這期已結束<div style="font-size:.75rem;font-weight:500;color:#94a3b8">下一期是 ' + (after ? after.期別 : iss.期別 + 1) + ' 期</div>';
+
+  const al = document.getElementById('nlAlert');
+  let msg = '';
+  if(isLatest && days <= 0) msg = '<i class="bi bi-calendar-plus me-1"></i>' + nlYM(nextYM) + '已經到了，新的一期進貨後，按右上角「開新的一期」建立 ' + (latest.期別 + 1) + ' 期。';
+  else if(st.left < 0) msg = '<i class="bi bi-exclamation-triangle me-1"></i>補出的數量比進貨多了 ' + (-st.left) + ' 本，請檢查進貨本數或補貨紀錄是否填錯。';
+  else if(isLatest && st.left === 0) msg = '<i class="bi bi-exclamation-circle me-1"></i>這一期已經全部補完了。';
+  else if(isLatest && st.left <= per * 2) msg = '<i class="bi bi-exclamation-circle me-1"></i>這一期只剩 ' + st.left + ' 本（約 ' + nlBundle(st.left, per) + ' 梱），庫存快用完了。';
+  al.style.display = msg ? '' : 'none';
+  al.className = 'mt-3 alert py-2 mb-0 ' + (st.left < 0 ? 'alert-danger' : 'alert-warning');
+  al.innerHTML = msg;
+
+  // 登記補貨表單
+  document.getElementById('nlFormIssue').textContent = '登記到 ' + iss.期別 + ' 期';
+  const locWrap = document.getElementById('nlFLocs');
+  const keep = {}; locWrap.querySelectorAll('input[data-loc]').forEach(i => keep[i.dataset.loc] = i.value);
+  const on = nlLocs.filter(l => l.啟用);
+  locWrap.innerHTML = on.length ? on.map(l => `<div class="input-group input-group-sm" style="width:auto">
+      <span class="input-group-text">${escapeHtml(l.地點)}</span>
+      <input type="number" min="0" step="1" class="form-control" style="width:70px" data-loc="${escapeHtml(l.地點)}" value="${escapeHtml(keep[l.地點]||'')}" placeholder="0" oninput="nlFormTotal()">
+      <span class="input-group-text">本</span></div>`).join('')
+    : '<span class="text-muted">還沒有啟用的補貨地點，請按右上角「補貨地點」新增。</span>';
+  nlFormTotal();
+  const byNames = [...new Set(nlRecords.map(r => r.經手人).filter(Boolean))];
+  document.getElementById('nlByList').innerHTML = byNames.map(n => `<option value="${escapeHtml(n)}">`).join('');
+
+  // 期別下拉
+  document.getElementById('nlIssueSel').innerHTML = nlIssues.map(i => `<option value="${i.期別}" ${i.期別 === iss.期別 ? 'selected' : ''}>${i.期別} 期（${nlYM(i.進貨月份)}）</option>`).join('');
+
+  // 補貨明細
+  const body = document.getElementById('nlRecBody');
+  body.innerHTML = st.recs.length ? st.recs.map(r => `<tr>
+      <td style="text-align:center">${escapeHtml(r.日期)}</td>
+      <td>${escapeHtml(r.地點)}</td>
+      <td style="text-align:right">${r.本數.toLocaleString()}</td>
+      <td style="text-align:right;color:#94a3b8">${nlBundle(r.本數, per)}</td>
+      <td>${escapeHtml(r.經手人)}</td>
+      <td style="text-align:center">${r.備註 ? `<span class="nl-note" title="${escapeHtml(r.備註)}" onclick="toast('備註', nlRecords.find(x=>x.ID==='${r.ID}').備註, 'info')">備</span>` : ''}</td>
+      <td style="text-align:center"><button class="btn btn-primary nl-edit" onclick="openNlRecModal('${r.ID}')" title="編輯"><i class="bi bi-pencil"></i></button></td>
+    </tr>`).join('')
+    : '<tr><td colspan="7" class="text-center text-muted py-4">這一期還沒有補貨紀錄</td></tr>';
+  const byLoc = {};
+  st.recs.forEach(r => byLoc[r.地點] = (byLoc[r.地點] || 0) + r.本數);
+  const locTxt = Object.keys(byLoc).map(k => escapeHtml(k) + ' ' + byLoc[k].toLocaleString() + ' 本').join('　');
+  document.getElementById('nlRecFoot').innerHTML = st.recs.length ? `<tr style="background:#fafafa;font-weight:600">
+      <td colspan="2" style="text-align:right">合計</td>
+      <td style="text-align:right">${st.out.toLocaleString()}</td>
+      <td style="text-align:right">${nlBundle(st.out, per)}</td>
+      <td colspan="3" style="font-weight:400;color:#64748b;font-size:.78rem">${locTxt}</td></tr>` : '';
+
+  // 各期總覽
+  const maxIn = Math.max(1, ...nlIssues.map(i => Math.max(i.進貨本數, nlStats(i).out)));
+  document.getElementById('nlHistBody').innerHTML = nlIssues.map(i => {
+    const s = nlStats(i); const w = Math.round(s.out / maxIn * 100); const wIn = Math.round(i.進貨本數 / maxIn * 100);
+    return `<tr class="${i.期別 === iss.期別 ? 'sel' : ''}" onclick="selectNlIssue(${i.期別})">
+      <td style="text-align:center;font-weight:600">${i.期別} 期</td>
+      <td style="text-align:center;color:#64748b;white-space:nowrap">${nlYM(i.進貨月份)}</td>
+      <td style="text-align:right">${i.進貨本數.toLocaleString()}</td>
+      <td style="text-align:right">${s.out.toLocaleString()}</td>
+      <td style="text-align:right;color:${s.left < 0 ? '#dc2626' : '#334155'}">${s.left.toLocaleString()}</td>
+      <td><div class="nl-bar" style="width:${wIn}%" title="進貨 ${i.進貨本數} 本，補出 ${s.out} 本"><div style="width:${i.進貨本數 ? Math.min(100, Math.round(s.out / i.進貨本數 * 100)) : 100}%"></div></div></td>
+      <td style="text-align:center;color:#64748b">${s.times}</td></tr>`;
+  }).join('');
+}
+
+function nlFormTotal(){
+  const iss = nlCurIssue(); const per = iss ? iss.每梱本數 : 50;
+  let t = 0;
+  document.querySelectorAll('#nlFLocs input[data-loc]').forEach(i => { t += Number(i.value) || 0; });
+  document.getElementById('nlFTotal').textContent = '合計 ' + t.toLocaleString() + ' 本（' + nlBundle(t, per) + ' 梱）';
+}
+
+async function nlPost(body){
+  body.token = getToken();
+  const r = await fetch(API, { method:'POST', body: JSON.stringify(body) });
+  return r.json();
+}
+
+async function submitNlRecords(){
+  const iss = nlCurIssue(); if(!iss){ toast('請先建立一期', '', 'danger'); return; }
+  const date = document.getElementById('nlFDate').value;
+  const by = document.getElementById('nlFBy').value.trim();
+  const items = [...document.querySelectorAll('#nlFLocs input[data-loc]')]
+    .map(i => ({ '地點': i.dataset.loc, '本數': Math.floor(Number(i.value) || 0) })).filter(x => x.本數 > 0);
+  if(!date){ toast('請選擇日期', '', 'danger'); return; }
+  if(!by){ toast('請填寫經手人', '', 'danger'); return; }
+  if(!items.length){ toast('請至少填一個地點的本數', '', 'danger'); return; }
+  const total = items.reduce((s, x) => s + x.本數, 0);
+  const left = nlStats(iss).left;
+  if(total > left && !confirm('這次要補 ' + total + ' 本，但 ' + iss.期別 + ' 期只剩 ' + left + ' 本。\n確定還是要登記嗎？')) return;
+  showLoad('登記中...');
+  try{
+    const r = await nlPost({ action:'insertNlRecords', data:{ '期別': iss.期別, '日期': date, '經手人': by, '備註': document.getElementById('nlFNote').value.trim(), items } });
+    if(!r.success){ toast('登記失敗', r.message, 'danger'); return; }
+    document.querySelectorAll('#nlFLocs input[data-loc]').forEach(i => i.value = '');
+    document.getElementById('nlFNote').value = '';
+    toast('登記成功', r.message, 'success');
+    await loadNewsletter();
+  }catch(err){ toast('連線失敗', err.message, 'danger'); }
+  finally{ hideLoad(); }
+}
+
+// ── 期別 ──
+function openNlIssueModal(no){
+  const iss = no ? nlIssues.find(i => i.期別 === no) : null;
+  _nlIssEditId = iss ? iss.ID : null;
+  document.getElementById('nlIssueTitle').textContent = iss ? '編輯 ' + iss.期別 + ' 期' : '開新的一期';
+  const last = nlIssues[0];
+  document.getElementById('nlIssNo').value    = iss ? iss.期別 : (last ? last.期別 + 1 : 155);
+  document.getElementById('nlIssMonth').value = iss ? iss.進貨月份 : (last ? nlAddMonths(last.進貨月份, 3) : nlNextQuarterMonth());
+  document.getElementById('nlIssQty').value   = iss ? iss.進貨本數 : (last ? last.進貨本數 : 800);
+  document.getElementById('nlIssPer').value   = iss ? iss.每梱本數 : (last ? last.每梱本數 : 50);
+  document.getElementById('nlIssNote').value  = iss ? iss.備註 : '';
+  document.getElementById('nlIssDelBtn').style.display = iss ? '' : 'none';
+  nlIssHint();
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('nlIssueModal')).show();
+}
+function nlIssHint(){
+  const q = Number(document.getElementById('nlIssQty').value) || 0;
+  const p = Number(document.getElementById('nlIssPer').value) || 50;
+  const m = document.getElementById('nlIssMonth').value;
+  document.getElementById('nlIssHint').textContent = '共 ' + nlBundle(q, p) + ' 梱' + (m ? '　・　期間 ' + nlPeriod(m) : '');
+}
+async function saveNlIssueNow(){
+  const data = {
+    ID: _nlIssEditId || '',
+    '期別': Number(document.getElementById('nlIssNo').value),
+    '進貨月份': document.getElementById('nlIssMonth').value,
+    '進貨本數': Number(document.getElementById('nlIssQty').value) || 0,
+    '每梱本數': Number(document.getElementById('nlIssPer').value) || 50,
+    '備註': document.getElementById('nlIssNote').value.trim()
+  };
+  if(!data.期別){ toast('請填寫期別', '', 'danger'); return; }
+  if(!data.進貨月份){ toast('請選擇進貨月份', '', 'danger'); return; }
+  showLoad('儲存中...');
+  try{
+    const r = await nlPost({ action:'saveNlIssue', data });
+    if(!r.success){ toast('儲存失敗', r.message, 'danger'); return; }
+    bootstrap.Modal.getInstance(document.getElementById('nlIssueModal')).hide();
+    toast('儲存成功', r.message, 'success');
+    nlSel = data.期別;
+    await loadNewsletter();
+  }catch(err){ toast('連線失敗', err.message, 'danger'); }
+  finally{ hideLoad(); }
+}
+async function deleteNlIssueNow(){
+  if(!_nlIssEditId) return;
+  if(!confirm('確定要刪除這一期嗎？（有補貨紀錄的期別不能刪除）')) return;
+  showLoad('刪除中...');
+  try{
+    const r = await nlPost({ action:'deleteNlIssue', id:_nlIssEditId });
+    if(!r.success){ toast('刪除失敗', r.message, 'danger'); return; }
+    bootstrap.Modal.getInstance(document.getElementById('nlIssueModal')).hide();
+    toast('已刪除', r.message, 'success');
+    nlSel = null;
+    await loadNewsletter();
+  }catch(err){ toast('連線失敗', err.message, 'danger'); }
+  finally{ hideLoad(); }
+}
+
+// ── 補貨紀錄 ──
+function openNlRecModal(id){
+  const r = nlRecords.find(x => x.ID === id); if(!r) return;
+  _nlRecEditId = id;
+  const names = nlLocs.map(l => l.地點); if(!names.includes(r.地點)) names.push(r.地點);
+  document.getElementById('nlRecLoc').innerHTML = names.map(n => `<option ${n === r.地點 ? 'selected' : ''}>${escapeHtml(n)}</option>`).join('');
+  document.getElementById('nlRecDate').value = r.日期;
+  document.getElementById('nlRecQty').value  = r.本數;
+  document.getElementById('nlRecBy').value   = r.經手人;
+  document.getElementById('nlRecNote').value = r.備註;
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('nlRecModal')).show();
+}
+async function saveNlRecordNow(){
+  const data = { ID:_nlRecEditId, '日期': document.getElementById('nlRecDate').value, '地點': document.getElementById('nlRecLoc').value,
+    '本數': Math.floor(Number(document.getElementById('nlRecQty').value) || 0), '經手人': document.getElementById('nlRecBy').value.trim(),
+    '備註': document.getElementById('nlRecNote').value.trim() };
+  if(!data.日期){ toast('請選擇日期', '', 'danger'); return; }
+  if(data.本數 <= 0){ toast('本數要大於 0', '', 'danger'); return; }
+  showLoad('儲存中...');
+  try{
+    const r = await nlPost({ action:'updateNlRecord', data });
+    if(!r.success){ toast('儲存失敗', r.message, 'danger'); return; }
+    bootstrap.Modal.getInstance(document.getElementById('nlRecModal')).hide();
+    toast('儲存成功', '', 'success');
+    await loadNewsletter();
+  }catch(err){ toast('連線失敗', err.message, 'danger'); }
+  finally{ hideLoad(); }
+}
+async function deleteNlRecordNow(){
+  if(!confirm('確定要刪除這筆補貨紀錄嗎？')) return;
+  showLoad('刪除中...');
+  try{
+    const r = await nlPost({ action:'deleteNlRecord', id:_nlRecEditId });
+    if(!r.success){ toast('刪除失敗', r.message, 'danger'); return; }
+    bootstrap.Modal.getInstance(document.getElementById('nlRecModal')).hide();
+    toast('已刪除', '', 'success');
+    await loadNewsletter();
+  }catch(err){ toast('連線失敗', err.message, 'danger'); }
+  finally{ hideLoad(); }
+}
+
+// ── 補貨地點 ──
+function openNlLocModal(){
+  _nlLocDraft = nlLocs.map(l => ({ 地點:l.地點, 啟用:l.啟用 }));
+  document.getElementById('nlLocNew').value = '';
+  renderNlLocList();
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('nlLocModal')).show();
+}
+function renderNlLocList(){
+  const n = _nlLocDraft.length;
+  document.getElementById('nlLocList').innerHTML = n ? _nlLocDraft.map((l, i) => `<div class="d-flex align-items-center gap-2 py-1" style="border-bottom:1px solid #f1f5f9">
+      <input class="form-check-input mt-0" type="checkbox" ${l.啟用 ? 'checked' : ''} onchange="_nlLocDraft[${i}].啟用=this.checked" id="nlLoc${i}">
+      <label class="flex-grow-1" for="nlLoc${i}" style="${l.啟用 ? '' : 'color:#94a3b8'}">${escapeHtml(l.地點)}</label>
+      <button class="btn btn-sm" style="padding:0 6px;color:#94a3b8" ${i === 0 ? 'disabled' : ''} onclick="moveNlLoc(${i},-1)" title="往上"><i class="bi bi-arrow-up"></i></button>
+      <button class="btn btn-sm" style="padding:0 6px;color:#94a3b8" ${i === n - 1 ? 'disabled' : ''} onclick="moveNlLoc(${i},1)" title="往下"><i class="bi bi-arrow-down"></i></button>
+    </div>`).join('') : '<div class="text-muted">還沒有地點</div>';
+}
+function moveNlLoc(i, d){ const j = i + d; [_nlLocDraft[i], _nlLocDraft[j]] = [_nlLocDraft[j], _nlLocDraft[i]]; renderNlLocList(); }
+function addNlLoc(){
+  const el = document.getElementById('nlLocNew'); const v = el.value.trim(); if(!v) return;
+  if(_nlLocDraft.some(l => l.地點 === v)){ toast('這個地點已經有了', '', 'danger'); return; }
+  _nlLocDraft.push({ 地點:v, 啟用:true }); el.value = ''; renderNlLocList();
+}
+async function saveNlLocsNow(){
+  if(document.getElementById('nlLocNew').value.trim()) addNlLoc();
+  showLoad('儲存中...');
+  try{
+    const r = await nlPost({ action:'saveNlLocations', data:_nlLocDraft });
+    if(!r.success){ toast('儲存失敗', r.message, 'danger'); return; }
+    bootstrap.Modal.getInstance(document.getElementById('nlLocModal')).hide();
+    toast('儲存成功', r.message, 'success');
+    await loadNewsletter();
+  }catch(err){ toast('連線失敗', err.message, 'danger'); }
+  finally{ hideLoad(); }
+}
+
+// ── 匯出 Excel ──
+function exportNewsletterExcel(){
+  if(!nlIssues.length){ toast('目前沒有資料可以匯出', '', 'info'); return; }
+  const sum = [['期別', '進貨月份', '進貨本數', '每梱本數', '進貨梱數', '已補出本數', '剩餘本數', '補貨次數', '備註']];
+  nlIssues.forEach(i => { const s = nlStats(i); sum.push([i.期別, i.進貨月份, i.進貨本數, i.每梱本數, Number(nlBundle(i.進貨本數, i.每梱本數).replace(/,/g,'')), s.out, s.left, s.times, i.備註]); });
+  const per = {}; nlIssues.forEach(i => per[i.期別] = i.每梱本數);
+  const det = [['期別', '日期', '地點', '本數', '梱', '經手人', '備註']];
+  [...nlRecords].sort((a, b) => a.期別 - b.期別 || (a.日期 < b.日期 ? -1 : a.日期 > b.日期 ? 1 : 0))
+    .forEach(r => det.push([r.期別, r.日期, r.地點, r.本數, Number(nlBundle(r.本數, per[r.期別]).replace(/,/g,'')), r.經手人, r.備註]));
+  const wb = XLSX.utils.book_new();
+  const ws1 = XLSX.utils.aoa_to_sheet(sum); ws1['!cols'] = [8,10,10,10,10,11,10,10,24].map(w => ({ wch:w }));
+  const ws2 = XLSX.utils.aoa_to_sheet(det); ws2['!cols'] = [8,12,14,8,8,10,24].map(w => ({ wch:w }));
+  XLSX.utils.book_append_sheet(wb, ws1, '各期總覽');
+  XLSX.utils.book_append_sheet(wb, ws2, '補貨明細');
+  XLSX.writeFile(wb, '奇美醫訊補貨紀錄_' + twToday() + '.xlsx');
 }
 </script>
 </body>
